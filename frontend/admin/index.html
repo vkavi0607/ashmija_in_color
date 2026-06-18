@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ashmija in color Admin</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+
+  <!-- Quill.js -->
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
+
+  <!-- Admin CSS -->
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body>
+
+  <!-- ================================================================
+       LOGIN OVERLAY
+       ================================================================ -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card" role="main" aria-label="Admin Login">
+
+      <div class="login-logo">
+        <div class="wordmark">ashmija <span>in color</span> Admin</div>
+        <div class="sub">Studio Management Portal</div>
+      </div>
+
+      <div class="login-divider"><span>sign in to continue</span></div>
+
+      <div class="login-error" id="login-error" role="alert">
+        <i class="ti ti-alert-circle"></i>
+        <span id="login-error-msg">Invalid email or password.</span>
+      </div>
+
+      <div class="login-input-wrap">
+        <i class="ti ti-mail input-icon"></i>
+        <input type="email" id="login-email" placeholder="admin@artwallstudio.com" autocomplete="email" />
+      </div>
+
+      <div class="login-input-wrap">
+        <i class="ti ti-lock input-icon"></i>
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" />
+      </div>
+
+      <button class="btn-login" id="btn-login" type="button">
+        <i class="ti ti-login-2"></i>
+        Sign In
+      </button>
+
+    </div>
+  </div>
+  <!-- /login-overlay -->
+
+
+  <!-- ================================================================
+       SIDEBAR
+       ================================================================ -->
+  <aside class="admin-sidebar" id="admin-sidebar" role="navigation" aria-label="Admin navigation">
+
+    <div class="sidebar-logo">
+      <div class="logo-wordmark">ashmija <span>in color</span> Admin</div>
+      <div class="logo-sub">Studio Portal</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+
+        <li class="nav-section-label">Overview</li>
+
+        <li class="nav-item active" data-section="dashboard">
+          <a href="#dashboard" onclick="return navigateTo('dashboard')">
+            <i class="ti ti-layout-dashboard nav-icon"></i>
+            Dashboard
+          </a>
+        </li>
+
+        <li class="nav-section-label">Content</li>
+
+        <li class="nav-item" data-section="portfolio">
+          <a href="#portfolio" onclick="return navigateTo('portfolio')">
+            <i class="ti ti-photo-video nav-icon"></i>
+            Portfolio
+          </a>
+        </li>
+
+        <li class="nav-item" data-section="artists">
+          <a href="#artists" onclick="return navigateTo('artists')">
+            <i class="ti ti-palette nav-icon"></i>
+            Artists
+          </a>
+        </li>
+
+        <li class="nav-section-label">Engagement</li>
+
+        <li class="nav-item" data-section="inquiries">
+          <a href="#inquiries" onclick="return navigateTo('inquiries')">
+            <i class="ti ti-message-2 nav-icon"></i>
+            Inquiries
+            <span class="badge badge-warning" id="nav-badge-inquiries" style="margin-left:auto;padding:2px 7px;font-size:0.62rem;"></span>
+          </a>
+        </li>
+
+        <li class="nav-item" data-section="reviews">
+          <a href="#reviews" onclick="return navigateTo('reviews')">
+            <i class="ti ti-star nav-icon"></i>
+            Reviews
+          </a>
+        </li>
+
+        <li class="nav-item" data-section="faq">
+          <a href="#faq" onclick="return navigateTo('faq')">
+            <i class="ti ti-help-circle nav-icon"></i>
+            FAQ
+          </a>
+        </li>
+
+        <li class="nav-section-label">System</li>
+
+        <li class="nav-item" data-section="config">
+          <a href="#config" onclick="return navigateTo('config')">
+            <i class="ti ti-settings nav-icon"></i>
+            Site Config
+          </a>
+        </li>
+
+      </ul>
+    </nav><!-- /sidebar-nav -->
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btn-logout" type="button" onclick="handleLogout()">
+        <i class="ti ti-logout"></i>
+        Sign Out
+      </button>
+    </div>
+
+  </aside>
+  <!-- /admin-sidebar -->
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay hidden" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+
+  <!-- ================================================================
+       MAIN CONTENT
+       ================================================================ -->
+  <main class="admin-main" id="admin-main">
+
+    <!-- ── Topbar ── -->
+    <header class="admin-topbar" role="banner">
+      <div class="topbar-left">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu" onclick="toggleSidebar()">
+          <i class="ti ti-menu-2"></i>
+        </button>
+        <div class="admin-breadcrumbs">
+          <a href="#dashboard" onclick="return navigateTo('dashboard')" class="breadcrumb-link">Admin</a>
+          <span class="breadcrumb-separator">/</span>
+          <h1 class="topbar-page-title current" id="topbar-title">Dashboard</h1>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="topbar-admin-info">
+          <div class="admin-avatar" id="admin-avatar">AW</div>
+          <div class="admin-name-tag">
+            <span class="name" id="admin-display-name">Admin</span>
+            <span class="role">Studio Manager</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- /admin-topbar -->
+
+
+    <!-- ── Content ── -->
+    <div class="admin-content" id="admin-content">
+
+      <!-- ────────────────────────────────────────
+           DASHBOARD SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-dashboard" class="admin-section active">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Dashboard</h2>
+            <p class="section-subtitle">Welcome back — here's what's happening at ashmija in color.</p>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-secondary btn-sm">
+              <i class="ti ti-refresh"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid" id="stats-grid">
+
+          <div class="stat-card">
+            <i class="ti ti-photo stat-icon"></i>
+            <div class="stat-label">Portfolio Items</div>
+            <div class="stat-value" id="stat-portfolio">—</div>
+            <div class="stat-delta"><i class="ti ti-trending-up"></i> Loading…</div>
+          </div>
+
+          <div class="stat-card">
+            <i class="ti ti-palette stat-icon"></i>
+            <div class="stat-label">Active Artists</div>
+            <div class="stat-value" id="stat-artists">—</div>
+            <div class="stat-delta"><i class="ti ti-trending-up"></i> Loading…</div>
+          </div>
+
+          <div class="stat-card">
+            <i class="ti ti-message-2 stat-icon"></i>
+            <div class="stat-label">New Inquiries</div>
+            <div class="stat-value" id="stat-inquiries">—</div>
+            <div class="stat-delta"><i class="ti ti-clock"></i> Loading…</div>
+          </div>
+
+          <div class="stat-card">
+            <i class="ti ti-star stat-icon"></i>
+            <div class="stat-label">Avg. Rating</div>
+            <div class="stat-value" id="stat-rating">—</div>
+            <div class="stat-delta"><i class="ti ti-trending-up"></i> Loading…</div>
+          </div>
+
+        </div>
+        <!-- /stats-grid -->
+
+        <!-- Recent Inquiries Quick Table -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <span class="card-title">Recent Inquiries</span>
+            <button class="btn btn-ghost btn-sm" onclick="navigateTo('inquiries')">
+              View all <i class="ti ti-arrow-right"></i>
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Project Type</th>
+                  <th>Received</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-inquiries">
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state" style="padding:32px 24px;">
+                      <i class="ti ti-inbox empty-icon"></i>
+                      <div class="empty-title">No inquiries yet</div>
+                      <div class="empty-text">New inquiry submissions will appear here.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Reviews Quick Table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pending Reviews</span>
+            <button class="btn btn-ghost btn-sm" onclick="navigateTo('reviews')">
+              View all <i class="ti ti-arrow-right"></i>
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Rating</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-reviews">
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state" style="padding:32px 24px;">
+                      <i class="ti ti-star empty-icon"></i>
+                      <div class="empty-title">No pending reviews</div>
+                      <div class="empty-text">Reviews awaiting approval will appear here.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- /#section-dashboard -->
+
+
+      <!-- ────────────────────────────────────────
+           PORTFOLIO SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-portfolio" class="admin-section">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Portfolio</h2>
+            <p class="section-subtitle">Manage mural projects and gallery images.</p>
+          </div>
+          <div class="section-actions">
+            <div class="search-bar">
+              <i class="ti ti-search"></i>
+              <input type="text" placeholder="Search projects…" id="portfolio-search" />
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-portfolio">
+              <i class="ti ti-plus"></i> Add Project
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px;"></th>
+                  <th>Title</th>
+                  <th>Artist</th>
+                  <th>Category</th>
+                  <th>Visible</th>
+                  <th>Sort</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="portfolio-table-body">
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <i class="ti ti-photo empty-icon"></i>
+                      <div class="empty-title">No portfolio items</div>
+                      <div class="empty-text">Add your first mural project to get started.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- /#section-portfolio -->
+
+
+      <!-- ────────────────────────────────────────
+           ARTISTS SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-artists" class="admin-section">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Artists</h2>
+            <p class="section-subtitle">Manage featured artists and their profiles.</p>
+          </div>
+          <div class="section-actions">
+            <div class="search-bar">
+              <i class="ti ti-search"></i>
+              <input type="text" placeholder="Search artists…" id="artists-search" />
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-artist">
+              <i class="ti ti-plus"></i> Add Artist
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px;"></th>
+                  <th>Name</th>
+                  <th>Speciality</th>
+                  <th>City</th>
+                  <th>Featured</th>
+                  <th>Sort</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="artists-table-body">
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <i class="ti ti-palette empty-icon"></i>
+                      <div class="empty-title">No artists yet</div>
+                      <div class="empty-text">Add your first artist profile to showcase your team.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- /#section-artists -->
+
+
+      <!-- ────────────────────────────────────────
+           INQUIRIES SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-inquiries" class="admin-section">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Inquiries</h2>
+            <p class="section-subtitle">Project enquiries and contact form submissions.</p>
+          </div>
+          <div class="section-actions">
+            <div class="search-bar">
+              <i class="ti ti-search"></i>
+              <input type="text" placeholder="Search inquiries…" id="inquiries-search" />
+            </div>
+            <select class="form-select btn-sm" id="inquiries-filter" style="width:auto;padding:8px 12px;font-size:0.78rem;">
+              <option value="">All Status</option>
+              <option value="new">New</option>
+              <option value="in_progress">In Progress</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Project Type</th>
+                  <th>Budget</th>
+                  <th>Received</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="inquiries-table-body">
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <i class="ti ti-message-2 empty-icon"></i>
+                      <div class="empty-title">No inquiries found</div>
+                      <div class="empty-text">Incoming project inquiries will appear here.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- /#section-inquiries -->
+
+
+      <!-- ────────────────────────────────────────
+           REVIEWS SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-reviews" class="admin-section">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Reviews</h2>
+            <p class="section-subtitle">Approve, feature, or remove client testimonials.</p>
+          </div>
+          <div class="section-actions">
+            <div class="search-bar">
+              <i class="ti ti-search"></i>
+              <input type="text" placeholder="Search reviews…" id="reviews-search" />
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-review">
+              <i class="ti ti-plus"></i> Add Review
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px;"></th>
+                  <th>Client</th>
+                  <th>Company</th>
+                  <th>Rating</th>
+                  <th>Featured</th>
+                  <th>Status</th>
+                  <th>Sort</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="reviews-table-body">
+                <tr>
+                  <td colspan="8">
+                    <div class="empty-state">
+                      <i class="ti ti-star empty-icon"></i>
+                      <div class="empty-title">No reviews yet</div>
+                      <div class="empty-text">Client testimonials will appear here once submitted.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- /#section-reviews -->
+
+
+      <!-- ────────────────────────────────────────
+           FAQ SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-faq" class="admin-section">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">FAQ</h2>
+            <p class="section-subtitle">Manage frequently asked questions displayed on the site.</p>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-primary btn-sm" id="btn-add-faq">
+              <i class="ti ti-plus"></i> Add Question
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:36px;"></th>
+                  <th>Question</th>
+                  <th>Category</th>
+                  <th>Visible</th>
+                  <th>Sort</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="faq-table-body">
+                <tr>
+                  <td colspan="6">
+                    <div class="empty-state">
+                      <i class="ti ti-help-circle empty-icon"></i>
+                      <div class="empty-title">No FAQ items</div>
+                      <div class="empty-text">Add questions to help visitors understand your services.</div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- /#section-faq -->
+
+
+      <!-- ────────────────────────────────────────
+           SITE CONFIG SECTION
+           ──────────────────────────────────────── -->
+      <div id="section-config" class="admin-section">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Site Config</h2>
+            <p class="section-subtitle">Global settings, hero content, and contact details.</p>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-ghost btn-sm" id="btn-preview-live">
+              <i class="ti ti-external-link"></i> Preview Live Site
+            </button>
+            <button class="btn btn-primary" id="btn-save-config">
+              <i class="ti ti-device-floppy"></i> Save Changes
+            </button>
+          </div>
+        </div>
+
+        <div id="config-warning-banner" style="display:none;margin-bottom:18px;padding:14px 16px;border-left:4px solid #d4882a;background:rgba(244, 211, 98, 0.18);color:#5f4411;border-radius:12px;font-size:0.96rem;">
+          You have unsaved changes
+        </div>
+
+        <div id="config-sections-container">
+
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+              <span class="card-title">Hero Section</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hero Tagline</label>
+              <input type="text" class="form-input" id="config-hero-tagline" placeholder="e.g. Curating Walls, Crafting Ambience." />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hero Sub Text</label>
+              <textarea class="form-textarea" id="config-hero-sub" rows="3" placeholder="Short tagline beneath the headline…"></textarea>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+              <span class="card-title">Contact Details</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">Contact Phone</label>
+                <input type="text" class="form-input" id="config-contact-phone" placeholder="+91 98765 43210" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Email</label>
+                <input type="text" class="form-input" id="config-contact-email" placeholder="hello@artwallstudio.com" />
+              </div>
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">WhatsApp Number</label>
+                <input type="text" class="form-input" id="config-contact-whatsapp" placeholder="919876543210" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Hero Stats</span>
+              <span style="font-size:0.75rem;color:var(--muted);">Displayed in the hero section</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+              <div class="form-group">
+                <label class="form-label">Stat: Sq. ft. painted</label>
+                <input type="text" class="form-input" id="config-stat-sqft" placeholder="750k+" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stat: Projects Done</label>
+                <input type="text" class="form-input" id="config-stat-projects" placeholder="2,900+" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stat: Cities</label>
+                <input type="text" class="form-input" id="config-stat-cities" placeholder="38+" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /config-sections-container -->
+
+      </div>
+      <!-- /#section-config -->
+
+    </div>
+    <!-- /admin-content -->
+
+  </main>
+  <!-- /admin-main -->
+
+
+  <!-- ================================================================
+       TOAST CONTAINER
+       ================================================================ -->
+  <div id="toast-container" aria-live="polite" aria-label="Notifications"></div>
+
+
+  <!-- ================================================================
+       GENERIC MODAL SHELL
+       ================================================================ -->
+  <div class="modal-overlay" id="admin-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+    <div class="modal-card" id="admin-modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title-text">Modal</h2>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="admin-modal-body">
+        <!-- Dynamic content injected by admin.js -->
+      </div>
+      <div class="modal-footer" id="admin-modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="modal-confirm-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================================================================
+       CDN SCRIPTS
+       ================================================================ -->
+
+  <!-- Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- SortableJS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+  <!-- Quill.js -->
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+
+  <!-- ================================================================
+       MODULAR SCRIPTS
+       ================================================================ -->
+  <script src="../../js/shared/supabase.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/portfolio.js"></script>
+  <script src="js/artists.js"></script>
+  <script src="js/inquiries.js"></script>
+  <script src="js/faqs.js"></script>
+  <script src="js/reviews.js"></script>
+  <script src="js/config.js"></script>
+
+  <!-- ================================================================
+       ADMIN BOOTSTRAP SCRIPT
+       ================================================================ -->
+  <script>
+    /* ─── Sidebar toggle (mobile) ──────────────────────────────────── */
+    function toggleSidebar() {
+      const sb = document.getElementById('admin-sidebar');
+      const ov = document.getElementById('sidebar-overlay');
+      if (sb) sb.classList.toggle('open');
+      if (ov) ov.classList.toggle('hidden');
+    }
+    function closeSidebar() {
+      const sb = document.getElementById('admin-sidebar');
+      const ov = document.getElementById('sidebar-overlay');
+      if (sb) sb.classList.remove('open');
+      if (ov) ov.classList.add('hidden');
+    }
+
+    /* ─── Modal ────────────────────────────────────────────────────── */
+    function openModal({ title = '', bodyHTML = '', size = '', onConfirm = null, confirmLabel = 'Save' } = {}) {
+      const overlay = document.getElementById('admin-modal');
+      const card    = document.getElementById('admin-modal-card');
+      const body    = document.getElementById('admin-modal-body');
+      const footer  = document.getElementById('admin-modal-footer');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+
+      if (!overlay || !card || !body || !confirmBtn) return;
+
+      document.getElementById('modal-title-text').textContent = title;
+      body.innerHTML = bodyHTML;
+
+      // size variant
+      card.className = 'modal-card' + (size ? ' modal-' + size : '');
+
+      // confirm handler
+      if (onConfirm) {
+        confirmBtn.textContent = confirmLabel;
+        confirmBtn.style.display = '';
+        confirmBtn.onclick = onConfirm;
+      } else {
+        confirmBtn.style.display = 'none';
+      }
+
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const overlay = document.getElementById('admin-modal');
+      if (overlay) overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // close on overlay backdrop click
+    const adminModal = document.getElementById('admin-modal');
+    if (adminModal) {
+      adminModal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+      });
+    }
+
+    // close on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>

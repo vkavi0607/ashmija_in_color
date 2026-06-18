@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Frontend Service
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: artwall-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+    environment:
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    networks:
+      - artwall-network
+    restart: unless-stopped
+
+  # Backend Service (placeholder for future)
+  # backend:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/backend/Dockerfile
+  #   container_name: artwall-backend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+  #     - NODE_ENV=production
+  #   networks:
+  #     - artwall-network
+  #   restart: unless-stopped
+
+  # Database Service (if using local PostgreSQL)
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: artwall-db
+  #   environment:
+  #     - POSTGRES_DB=${DB_NAME}
+  #     - POSTGRES_USER=${DB_USER}
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD}
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+  #     - ./database/schema:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - artwall-network
+  #   restart: unless-stopped
+
+  # Nginx Reverse Proxy (for production)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: artwall-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx:/etc/nginx/conf.d
+  #     - ./certs:/etc/nginx/certs
+  #   depends_on:
+  #     - frontend
+  #   networks:
+  #     - artwall-network
+  #   restart: unless-stopped
+
+networks:
+  artwall-network:
+    driver: bridge
+
+# volumes:
+#   db_data:

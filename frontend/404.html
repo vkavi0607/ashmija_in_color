@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 · ashmija in color</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f3eee8 0%, #fff9f3 100%);
+    }
+    .error-card {
+      max-width: 680px;
+      width: 100%;
+      padding: 3rem 2.5rem;
+      border-radius: 32px;
+      box-shadow: 0 22px 60px rgba(38, 33, 22, 0.12);
+      background: #fff;
+      border: 1px solid rgba(184, 147, 58, 0.14);
+    }
+    .error-code {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(5rem, 8vw, 8rem);
+      color: #2b1f14;
+      margin: 0;
+    }
+    .error-title {
+      margin: 0.75rem 0 1.5rem;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #3b3028;
+      line-height: 1.05;
+    }
+    .error-copy {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #5a4e43;
+      margin-bottom: 2rem;
+    }
+    .error-actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 180px;
+      padding: 0.95rem 1.5rem;
+      border-radius: 999px;
+      background: #b8933a;
+      color: #1c1a17;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .error-actions a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(184, 147, 58, 0.24);
+    }
+    .botanical-graphic {
+      margin-top: 2rem;
+      display: grid;
+      place-items: center;
+      color: #8d7c65;
+    }
+    .botanical-graphic svg {
+      width: 180px;
+      height: auto;
+      opacity: 0.76;
+    }
+  </style>
+</head>
+<body>
+  <main class="error-card">
+    <p class="error-code">404</p>
+    <h1 class="error-title">Page not found.</h1>
+    <p class="error-copy">This wall is waiting for art, but the page you requested doesn’t exist. Let’s bring you back to the studio where the next piece is ready to be discovered.</p>
+    <div class="error-actions">
+      <a href="index.html">Return to Home</a>
+    </div>
+    <div class="botanical-graphic" aria-hidden="true">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path d="M54.7,148.4c12.4-15.7,27.8-24.5,38.1-37.7c7.1-8.3,10.9-18.5,14.8-29.1c3.7-10.2,11.1-25.7,8.9-38.4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="4"/>
+        <path d="M73.5,125.6c8.2-7.8,16.4-15.8,21.2-26.3c4.6-10,6.7-20.7,4.9-31.4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="4"/>
+        <path d="M99.8,99.8c0.8,13.7-0.3,27.6-5.7,40.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="4"/>
+        <circle cx="127" cy="44" r="14" fill="none" stroke="currentColor" stroke-width="4"/>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

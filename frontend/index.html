@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior:smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ashmija in color | Premium Custom Murals & Hand-Painted Wall Art</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="ashmija in color connects spaces and brands with South Asia's premium mural artists. We curate, manage, and craft hand-painted murals and custom wall art.">
+  <meta name="keywords"
+    content="mural studio, custom murals, hand-painted walls, street art India, mural artists Chennai, office wall art, commercial mural design">
+  <meta name="author" content="ashmija in color">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Tabler Icons CSS CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Local script (deferred) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/shared/supabase.js" defer></script>
+  <script src="js/public/script.js" defer></script>
+  <script src="admin/js/portfolio.js" defer></script>
+  <script src="admin/js/artists.js" defer></script>
+  <script src="admin/js/faqs.js" defer></script>
+  <script src="admin/js/reviews.js" defer></script>
+  <script src="admin/js/config.js" defer></script>
+  <script src="js/shared/data-loader.js" defer></script>
+</head>
+
+<body>
+  <div id="scroll-progress-bar" class="scroll-progress-bar" aria-hidden="true">
+    <div class="scroll-progress-fill"></div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header>
+    <nav>
+      <div class="nav-logo">ashmija <span>in color</span></div>
+      <ul class="nav-links">
+        <li><a href="#portfolio-section" id="nav-link-gallery">Creations</a></li>
+        <li><a href="#artists-section" id="nav-link-artists">Artists</a></li>
+        <li><a href="#why-us-section" id="nav-link-projects">Why Us</a></li>
+        <li><a href="#contact-section" id="nav-link-contact">Connect</a></li>
+        <li><a href="#about-section" id="nav-link-about">Story</a></li>
+      </ul>
+      <button class="nav-btn" id="btn-book-artist"
+        onclick="document.getElementById('contact-section').scrollIntoView({behavior:'smooth'})">Book Artist</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero" id="hero-section">
+      <div class="hero-left">
+        <div class="hero-eyebrow">✦ Premium Mural Studio</div>
+        <h1 class="hero-title">Curating Walls,<br><em>Crafting<br>Ambience.</em></h1>
+        <p class="hero-sub">We transform blank walls into immersive art experiences — connecting brands and spaces with
+          South Asia's finest mural artists.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" id="btn-hero-explore"
+            onclick="document.getElementById('portfolio-section').scrollIntoView({behavior:'smooth'})">Explore
+            Gallery</button>
+          <button class="btn-outline" id="btn-hero-artists"
+            onclick="document.getElementById('artists-section').scrollIntoView({behavior:'smooth'})">Meet Artists
+            →</button>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-num">750k+</div>
+            <div class="hero-stat-label">Sq. ft. painted</div>
+          </div>
+          <div style="width:1px;background:rgba(184,147,58,0.2)"></div>
+          <div>
+            <div class="hero-stat-num">2,900+</div>
+            <div class="hero-stat-label">Projects done</div>
+          </div>
+          <div style="width:1px;background:rgba(184,147,58,0.2)"></div>
+          <div>
+            <div class="hero-stat-num">38+</div>
+            <div class="hero-stat-label">Cities</div>
+          </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Band -->
+    <div class="cta-band" id="cta-section">
+      <div class="cta-inner reveal">
+        <div class="cta-glow"></div>
+        <h2>Ready to transform your<br><em>wall today?</em></h2>
+        <p>Join 3,000+ happy clients who turned blank walls into unforgettable brand experiences.</p>
+        <div class="cta-btns">
+          <button class="cta-btn-primary" id="btn-cta-start"
+            onclick="document.getElementById('contact-section').scrollIntoView({behavior:'smooth'})">Start Your
+            Project</button>
+          <button class="cta-btn-outline" id="btn-cta-portfolio"
+            onclick="document.getElementById('portfolio-section').scrollIntoView({behavior:'smooth'})">View Portfolio
+            →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio-section" style="padding:4.5rem 2.5rem">
+      <div class="foliage-decor decor-left-arches" aria-hidden="true"></div>
+      <div class="works-header reveal">
+        <div>
+          <h2 class="sec-title">Our Creations</h2>
+        </div>
+        <a href="#" class="see-all" id="link-view-all-works">View all works →</a>
+      </div>
+      <div class="gallery-grid reveal" style="transition-delay:.1s">
+        <div class="gallery-item tall">
+          <div class="gal-inner" style="height:440px">
+            <img
+              src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=600&h=900&q=80"
+              alt="Botanical Bloom mural" style="width:100%;height:100%;object-fit:cover;display:block">
+          </div>
+          <div class="gal-overlay"></div>
+          <div class="gal-info">
+            <h4>Botanical Bloom</h4>
+            <span>Priya Natarajan · 2024</span>
+          </div>
+          <div class="gal-details">
+            <div class="gal-detail-row">
+              <i class="ti ti-user" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Client</span><span class="gal-detail-value">Google India — Chennai
+                  Campus</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-palette" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Art Type</span><span class="gal-detail-value">Botanical Mural ·
+                  Hand-Painted</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-map-pin" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Location</span><span class="gal-detail-value">Chennai, Tamil
+                  Nadu</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-dimensions" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Area</span><span class="gal-detail-value">2,400 sq. ft.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gal-inner" style="height:215px">
+            <img src="https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=600&h=400&q=80"
+              alt="Urban Grid street art mural" style="width:100%;height:100%;object-fit:cover;display:block">
+          </div>
+          <div class="gal-overlay"></div>
+          <div class="gal-info">
+            <h4>Urban Grid</h4>
+            <span>Arun K. · 2024</span>
+          </div>
+          <div class="gal-details">
+            <div class="gal-detail-row">
+              <i class="ti ti-user" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Client</span><span class="gal-detail-value">WeWork — Bangalore
+                  Hub</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-palette" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Art Type</span><span class="gal-detail-value">Geometric Street
+                  Art</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-map-pin" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Location</span><span class="gal-detail-value">Bangalore,
+                  Karnataka</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-dimensions" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Area</span><span class="gal-detail-value">850 sq. ft.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gal-inner" style="height:215px">
+            <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=600&h=400&q=80"
+              alt="Ocean Memory abstract painting" style="width:100%;height:100%;object-fit:cover;display:block">
+          </div>
+          <div class="gal-overlay"></div>
+          <div class="gal-info">
+            <h4>Ocean Memory</h4>
+            <span>Meera S. · 2023</span>
+          </div>
+          <div class="gal-details">
+            <div class="gal-detail-row">
+              <i class="ti ti-user" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Client</span><span class="gal-detail-value">Taj Fisherman's
+                  Cove</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-palette" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Art Type</span><span class="gal-detail-value">Abstract Fluid
+                  Art</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-map-pin" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Location</span><span class="gal-detail-value">Kovalam, Chennai</span>
+              </div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-dimensions" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Area</span><span class="gal-detail-value">1,200 sq. ft.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gal-inner" style="height:215px">
+            <img
+              src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80"
+              alt="Golden Axis abstract art" style="width:100%;height:100%;object-fit:cover;display:block">
+          </div>
+          <div class="gal-overlay"></div>
+          <div class="gal-info">
+            <h4>Golden Axis</h4>
+            <span>Ravi S. · 2024</span>
+          </div>
+          <div class="gal-details">
+            <div class="gal-detail-row">
+              <i class="ti ti-user" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Client</span><span class="gal-detail-value">ITC Grand Chola</span>
+              </div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-palette" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Art Type</span><span class="gal-detail-value">Gold Leaf
+                  Abstract</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-map-pin" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Location</span><span class="gal-detail-value">Guindy, Chennai</span>
+              </div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-dimensions" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Area</span><span class="gal-detail-value">680 sq. ft.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-item">
+          <div class="gal-inner" style="height:215px">
+            <img
+              src="https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80"
+              alt="Nebula cosmic mural art" style="width:100%;height:100%;object-fit:cover;display:block">
+          </div>
+          <div class="gal-overlay"></div>
+          <div class="gal-info">
+            <h4>Nebula</h4>
+            <span>Divya M. · 2024</span>
+          </div>
+          <div class="gal-details">
+            <div class="gal-detail-row">
+              <i class="ti ti-user" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Client</span><span class="gal-detail-value">Zoho Corporation</span>
+              </div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-palette" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Art Type</span><span class="gal-detail-value">Cosmic Mural · Spray
+                  Art</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-map-pin" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Location</span><span class="gal-detail-value">Tenkasi, Tamil
+                  Nadu</span></div>
+            </div>
+            <div class="gal-detail-row">
+              <i class="ti ti-dimensions" aria-hidden="true"></i>
+              <div><span class="gal-detail-label">Area</span><span class="gal-detail-value">1,500 sq. ft.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials-section" class="testimonials-section">
+      <div class="foliage-decor decor-left-arches" aria-hidden="true" style="opacity: 0.08;"></div>
+
+      <div class="reveal" style="text-align:center;margin-bottom:0">
+        <h2 class="sec-title">What Our Clients Say</h2>
+        <p class="sec-sub" style="max-width:440px;margin:.4rem auto 0">Trusted by top corporate spaces, luxury estates,
+          and public installations</p>
+      </div>
+
+      <div class="testimonials-grid reveal" style="transition-delay:.12s">
+        <article class="testimonial-card glass-card">
+          <div class="testimonial-work-img">
+            <img src="https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?auto=format&fit=crop&w=900&h=620&q=80"
+              alt="Botanical mural project work">
+          </div>
+          <div class="testimonial-content">
+            <div class="testimonial-avatar">
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150"
+                alt="Kavitha Ramesh">
+            </div>
+            <h4 class="testimonial-name">Kavitha</h4>
+            <span class="testimonial-company">Director, Google Chennai</span>
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+            </div>
+            <p class="testimonial-quote">ashmija in color transformed our empty lobby into an immersive botanical gallery. Our
+              visitors are consistently wowed at first glance. Truly professional management from sketch to paint.</p>
+            <time class="testimonial-date">May 18, 2024</time>
+          </div>
+        </article>
+
+        <article class="testimonial-card glass-card">
+          <div class="testimonial-work-img">
+            <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=900&h=620&q=80"
+              alt="Restaurant mural project work">
+          </div>
+          <div class="testimonial-content">
+            <div class="testimonial-avatar">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150"
+                alt="Vikram Malhotra">
+            </div>
+            <h4 class="testimonial-name">Vikram</h4>
+            <span class="testimonial-company">Curator, Taj Group</span>
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+            </div>
+            <p class="testimonial-quote">We wanted our restaurant wall to reflect the rich heritage of South India in a
+              modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.</p>
+            <time class="testimonial-date">April 7, 2024</time>
+          </div>
+        </article>
+
+        <article class="testimonial-card glass-card">
+          <div class="testimonial-work-img">
+            <img src="https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=900&h=620&q=80"
+              alt="Courtyard mural project work">
+          </div>
+          <div class="testimonial-content">
+            <div class="testimonial-avatar">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150"
+                alt="Ananya Nair">
+            </div>
+            <h4 class="testimonial-name">Ananya</h4>
+            <span class="testimonial-company">Architect, Nair Villas</span>
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+              <i class="ti ti-star-filled" aria-hidden="true"></i>
+            </div>
+            <p class="testimonial-quote">Every detail of the custom installation inside our luxury courtyard was handled
+              flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.</p>
+            <time class="testimonial-date">March 22, 2024</time>
+          </div>
+        </article>
+      </div>
+      <div class="testimonial-rate-wrap reveal" style="transition-delay:.15s; display: flex; gap: 1rem; justify-content: center;">
+        <button type="button" class="btn-secondary-outline" id="view-all-reviews-btn">View More Reviews</button>
+        <button type="button" class="btn-secondary" id="rate-us-btn">Rate Us</button>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Artists Section -->
+    <section class="artists-bg" id="artists-section" style="padding:5.5rem 2.5rem">
+      <div class="foliage-decor decor-right-leaves" aria-hidden="true"></div>
+
+      <div class="creators-header reveal">
+        <div class="creators-header-left">
+          <h2 class="sec-title-main">Meet The Team</h2>
+          <h3 class="sec-title-sub">Our Professionals</h3>
+          <div class="accent-line"></div>
+        </div>
+        <div class="creators-header-right">
+          <p class="creators-lead-desc">Our team of visionary artists blends architectural knowledge with visual
+            storytelling. From large-scale exterior murals to intricate indoor spaces, we bring walls to life with
+            precision and passion.</p>
+          <button class="btn-read-more" id="btn-creators-more">READ MORE</button>
+        </div>
+      </div>
+
+      <div class="creators-grid-new">
+        <!-- Creator 1: Vikram -->
+        <div class="creator-card glass-card reveal" style="transition-delay:.1s" data-name="Vikram"
+          data-role="Lead Artist, Urban & Abstract"
+          data-bio="Specializing in geometric abstraction and large-scale urban realism, Vikram has spent the last 12 years collaborating with corporate campuses, hospitality interiors, and public districts to transform blank walls into local landmarks."
+          data-quote="Art should not be confined behind closed doors. Corporate corridors and public walls are the spaces where street realism and daily life truly merge."
+          data-stats="✦ Featured in Elle Décor,✦ 80+ Projects"
+          data-image="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400&h=500">
+          <div class="creator-card-img">
+            <img
+              src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400&h=500"
+              alt="Vikram">
+            <div class="creator-card-hover-overlay">
+              <span class="view-bio-txt"><i class="ti ti-eye"></i> View Profile</span>
+            </div>
+          </div>
+          <div class="creator-card-info">
+            <h4 class="creator-card-name">VIKRAM</h4>
+            <span class="creator-card-role">Lead Artist, Urban & Abstract</span>
+            <div class="creator-card-social">
+              <a href="#" class="social-icon fb" aria-label="Facebook" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-facebook"></i></a>
+              <a href="#" class="social-icon tw" aria-label="Twitter" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-twitter"></i></a>
+              <a href="#" class="social-icon ln" aria-label="LinkedIn" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-linkedin"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Creator 2: Ashmija -->
+        <div class="creator-card glass-card reveal" style="transition-delay:.2s" data-name="Ashmija"
+          data-role="Lead Artist, Muralist"
+          data-bio="Merging intricate botanical illustrations with architectural backdrops, Ashmija's nature-inspired murals and large-scale floral art pieces bring organic life and a sense of calm to high-end interiors across South Asia."
+          data-quote="My work bridges the gap between concrete rooms and the wild serenity of nature. I paint to give blank walls a voice and spaces a heartbeat."
+          data-stats="✦ 120+ Murals,✦ National Art Award"
+          data-image="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400&h=500">
+          <div class="creator-card-img">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400&h=500"
+              alt="Ashmija">
+            <div class="creator-card-hover-overlay">
+              <span class="view-bio-txt"><i class="ti ti-eye"></i> View Profile</span>
+            </div>
+          </div>
+          <div class="creator-card-info">
+            <h4 class="creator-card-name">ASHMIJA</h4>
+            <span class="creator-card-role">Lead Artist, Muralist</span>
+            <div class="creator-card-social">
+              <a href="#" class="social-icon fb" aria-label="Facebook" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-facebook"></i></a>
+              <a href="#" class="social-icon tw" aria-label="Twitter" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-twitter"></i></a>
+              <a href="#" class="social-icon ln" aria-label="LinkedIn" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-linkedin"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Creator 3: Meera S. -->
+        <div class="creator-card glass-card reveal" style="transition-delay:.3s" data-name="Meera S."
+          data-role="Fine Art & Botanical Specialist"
+          data-bio="With a background in classical fine art, Meera translates traditional oil and watercolor textures onto large indoor surfaces. Her work features detailed foliage patterns, soft color palettes, and elegant spatial harmonies."
+          data-quote="A mural is a dialogue with the room's geometry. Every stroke is designed to harmonize with the light and air of the space."
+          data-stats="✦ 90+ Paintings,✦ Gold Medalist in Fine Arts"
+          data-image="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=500">
+          <div class="creator-card-img">
+            <img
+              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=500"
+              alt="Meera S.">
+            <div class="creator-card-hover-overlay">
+              <span class="view-bio-txt"><i class="ti ti-eye"></i> View Profile</span>
+            </div>
+          </div>
+          <div class="creator-card-info">
+            <h4 class="creator-card-name">MEERA S.</h4>
+            <span class="creator-card-role">Fine Art & Botanical Specialist</span>
+            <div class="creator-card-social">
+              <a href="#" class="social-icon fb" aria-label="Facebook" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-facebook"></i></a>
+              <a href="#" class="social-icon tw" aria-label="Twitter" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-twitter"></i></a>
+              <a href="#" class="social-icon ln" aria-label="LinkedIn" onclick="event.stopPropagation();"><i
+                  class="ti ti-brand-linkedin"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Band -->
+    <div class="stats-band" id="stats-band">
+      <div class="stats-band-inner reveal">
+        <div class="stat-item">
+          <div class="stat-num" data-target="750000" data-suffix="k+">750k+</div>
+          <div class="stat-label">Sq. ft. of walls painted</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="2900" data-suffix="+">2,900+</div>
+          <div class="stat-label">Projects delivered</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="3000" data-suffix="+">3,000+</div>
+          <div class="stat-label">Happy clients</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="38" data-suffix="+">38+</div>
+          <div class="stat-label">Cities across India</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Why Us Section -->
+    <section id="why-us-section" style="padding:4.5rem 2.5rem">
+      <div class="foliage-decor decor-left-monstera" aria-hidden="true"></div>
+      <div class="reveal" style="text-align:center;margin-bottom:0">
+        <div class="sec-label" style="display:flex;justify-content:center">Why us</div>
+        <h2 class="sec-title">Why Clients Choose Us</h2>
+        <p class="sec-sub" style="max-width:440px;margin:.4rem auto 0">End-to-end art experiences backed by expertise
+          and passion</p>
+      </div>
+      <div class="why-grid reveal" style="transition-delay:.1s">
+        <div class="why-card glass-subtle">
+          <div class="why-icon-wrap"><i class="ti ti-map-pin" aria-hidden="true"></i></div>
+          <h4>Site Assessment</h4>
+          <p>On-ground evaluation of surface, lighting, and architecture before a single brushstroke begins.</p>
+        </div>
+        <div class="why-card glass-subtle">
+          <div class="why-icon-wrap"><i class="ti ti-sparkles" aria-hidden="true"></i></div>
+          <h4>Personalised Design</h4>
+          <p>Bespoke concept development and mood boards tailored to your brand identity and space story.</p>
+        </div>
+        <div class="why-card glass-subtle">
+          <div class="why-icon-wrap"><i class="ti ti-trending-up" aria-hidden="true"></i></div>
+          <h4>Positive Return on Art</h4>
+          <p>Clients report higher footfall, stronger social engagement and elevated brand perception post-mural.</p>
+        </div>
+        <div class="why-card glass-subtle">
+          <div class="why-icon-wrap"><i class="ti ti-timeline" aria-hidden="true"></i></div>
+          <h4>End-to-End Management</h4>
+          <p>Permits, logistics, installation and aftercare — all handled seamlessly with zero fuss for you.</p>
+        </div>
+        <div class="why-card glass-subtle">
+          <div class="why-icon-wrap"><i class="ti ti-color-swatch" aria-hidden="true"></i></div>
+          <h4>Premium Materials</h4>
+          <p>UV-resistant, eco-certified paints ensuring murals that look stunning for 10+ years outdoors.</p>
+        </div>
+        <div class="why-card glass-subtle">
+          <div class="why-icon-wrap"><i class="ti ti-camera" aria-hidden="true"></i></div>
+          <h4>Pro Photography</h4>
+          <p>Every project ends with a professional photoshoot — portfolio-ready and social-ready imagery.</p>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- Contact Us Section -->
+    <section id="contact-section" style="padding:4.5rem 2.5rem">
+      <div class="contact-section-grid reveal">
+        <div class="contact-info-side">
+          <div class="sec-label">Get in Touch</div>
+          <h2 class="sec-title">Contact Us</h2>
+          <p class="sec-sub" style="max-width:380px;margin-top:.6rem">Have a project in mind? Let's bring your walls to
+            life. Reach out and our team will get back within 24 hours.</p>
+
+        </div>
+        <div class="contact-form-side glass-card" style="padding:2.2rem">
+          <h3
+            style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:400;margin-bottom:.3rem;color:var(--ink)">
+            Send Us a Message</h3>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.5">We'd love to hear about
+            your vision</p>
+          <form id="contact-section-form" onsubmit="event.preventDefault();">
+            <div class="form-row">
+              <div>
+                <label class="form-label" for="contact-first-name">First name</label>
+                <input class="form-input" type="text" id="contact-first-name" placeholder="Arjun" required>
+              </div>
+              <div>
+                <label class="form-label" for="contact-last-name">Last name</label>
+                <input class="form-input" type="text" id="contact-last-name" placeholder="Sharma" required>
+              </div>
+            </div>
+            <label class="form-label" for="contact-email">Email</label>
+            <input class="form-input" type="email" id="contact-email" placeholder="hello@example.com" required>
+            <label class="form-label" for="contact-phone">Phone</label>
+            <input class="form-input" type="tel" id="contact-phone" placeholder="+91 98765 43210">
+            <label class="form-label" for="contact-project-type">Project type</label>
+            <select class="form-input" id="contact-project-type">
+              <option>Commercial Space</option>
+              <option>Residential</option>
+              <option>Public Art</option>
+              <option>Corporate</option>
+            </select>
+            <label class="form-label" for="contact-message">Your message</label>
+            <textarea class="form-input" id="contact-message" rows="4" placeholder="Describe your wall idea..."
+              style="resize:vertical"></textarea>
+            <button class="form-submit" id="btn-contact-submit" type="submit">Send Message →</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- About Us Section -->
+    <section id="about-section" style="padding:4.5rem 2.5rem">
+      <div class="foliage-decor decor-right-banana" aria-hidden="true"></div>
+      <div class="about-grid reveal">
+        <div class="about-content">
+          <div class="sec-label">Our Story</div>
+          <h2 class="sec-title">About ashmija in color</h2>
+          <p class="sec-sub" style="max-width:500px;margin-top:.8rem">Founded in 2015 in Chennai, ashmija in color began
+            with a simple belief — every wall is a canvas waiting to tell a story. What started as a passion project by
+            a small group of mural enthusiasts has grown into South Asia's most trusted mural art studio.</p>
+          <p class="sec-sub" style="max-width:500px;margin-top:1rem">We've painted over 750,000 sq. ft. across 38+
+            cities, partnering with brands like Google, WeWork, Taj Hotels, and ITC to transform ordinary spaces into
+            extraordinary experiences. Our curated network of 120+ artists specialises in everything from botanical
+            murals to abstract installations.</p>
+          <div class="about-values">
+            <div class="about-value-item glass-subtle">
+              <div class="why-icon-wrap"><i class="ti ti-heart" aria-hidden="true"></i></div>
+              <div>
+                <h4
+                  style="font-family:'Playfair Display',serif;font-size:.92rem;font-weight:400;color:var(--ink);margin-bottom:.2rem">
+                  Passion-Driven</h4>
+                <p style="font-size:.75rem;color:var(--muted);line-height:1.5;font-weight:300">Every project is treated
+                  as a work of art, not just a job.</p>
+              </div>
+            </div>
+            <div class="about-value-item glass-subtle">
+              <div class="why-icon-wrap"><i class="ti ti-users" aria-hidden="true"></i></div>
+              <div>
+                <h4
+                  style="font-family:'Playfair Display',serif;font-size:.92rem;font-weight:400;color:var(--ink);margin-bottom:.2rem">
+                  Community First</h4>
+                <p style="font-size:.75rem;color:var(--muted);line-height:1.5;font-weight:300">We empower local artists
+                  and invest in emerging talent.</p>
+              </div>
+            </div>
+            <div class="about-value-item glass-subtle">
+              <div class="why-icon-wrap"><i class="ti ti-leaf" aria-hidden="true"></i></div>
+              <div>
+                <h4
+                  style="font-family:'Playfair Display',serif;font-size:.92rem;font-weight:400;color:var(--ink);margin-bottom:.2rem">
+                  Eco-Conscious</h4>
+                <p style="font-size:.75rem;color:var(--muted);line-height:1.5;font-weight:300">100% eco-certified,
+                  UV-resistant paints on every project.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="about-visual reveal" style="transition-delay:.15s">
+          <div class="about-card glass-card" style="padding:2rem;text-align:center">
+            <div
+              style="font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:700;color:var(--gold);line-height:1">
+              10</div>
+            <div
+              style="font-size:.72rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;font-weight:500">
+              Years of Excellence</div>
+            <div
+              style="height:1px;background:linear-gradient(to right,transparent,rgba(184,147,58,0.3),transparent);margin:1.2rem 0">
+            </div>
+            <div
+              style="font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:700;color:var(--gold);line-height:1">
+              120+</div>
+            <div
+              style="font-size:.72rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;font-weight:500">
+              Curated Artists</div>
+            <div
+              style="height:1px;background:linear-gradient(to right,transparent,rgba(184,147,58,0.3),transparent);margin:1.2rem 0">
+            </div>
+            <div
+              style="font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:700;color:var(--gold);line-height:1">
+              15</div>
+            <div
+              style="font-size:.72rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;font-weight:500">
+              Industry Awards</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">ashmija <span>in color</span></div>
+        <p class="footer-desc">Transforming spaces through the power of curated mural art across India since 2015.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Navigate</h5>
+        <ul>
+          <li><a href="#portfolio-section" id="footer-link-gallery">Gallery</a></li>
+          <li><a href="#artists-section" id="footer-link-artists">Our Artists</a></li>
+          <li><a href="#why-us-section" id="footer-link-projects">Projects</a></li>
+          <li><a href="#contact-section" id="footer-link-contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>About</h5>
+        <ul>
+          <li><a href="#about-section" id="footer-link-story">About Us</a></li>
+          <li><a href="#hero-section" id="footer-link-home">Home</a></li>
+          <li><a href="#stats-band" id="footer-link-stats">Our Impact</a></li>
+          <li><a href="#cta-section" id="footer-link-cta">Get Started</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="#" id="footer-link-office">Chennai Office</a></li>
+          <li><a href="mailto:ashmijaincolor@gmail.com" id="footer-link-email">ashmijaincolor@gmail.com</a></li>
+          <li><a href="tel:+918870120750" id="footer-link-phone">+91 8870120750</a></li>
+          <li><a href="#" id="footer-link-whatsapp">WhatsApp Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 ashmija in color. All rights reserved.</div>
+      <div class="footer-socials">
+        <a href="#" class="s-pill" id="footer-social-instagram">Instagram</a>
+        <a href="#" class="s-pill" id="footer-social-behance">Behance</a>
+        <a href="#" class="s-pill" id="footer-social-linkedin">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal Backdrop -->
+  <div id="modal-backdrop" class="modal-backdrop"></div>
+
+  <!-- Creator Detail Modal -->
+  <div id="creator-modal" class="creator-modal-container" role="dialog" aria-modal="true">
+    <button type="button" class="modal-close-btn" id="modal-close" aria-label="Close modal">&times;</button>
+    <div class="modal-body-content">
+      <div class="modal-left-img-wrap">
+        <img id="modal-img" src="" alt="">
+      </div>
+      <div class="modal-right-info">
+        <span id="modal-role" class="creator-role-badge">Lead Artist</span>
+        <h3 id="modal-name" class="creator-name-title">Artist Name</h3>
+
+        <p id="modal-bio" class="creator-bio-text">Artist bio content goes here...</p>
+
+        <blockquote id="modal-quote" class="creator-quote-text">"Artist quote goes here..."</blockquote>
+
+        <div id="modal-stats" class="creator-stats-wrap">
+          <!-- Badges dynamically added here -->
+        </div>
+
+        <div class="modal-social-links">
+          <span class="connect-label">Connect:</span>
+          <a href="#" id="modal-fb" class="social-icon fb" aria-label="Facebook"><i
+              class="ti ti-brand-facebook"></i></a>
+          <a href="#" id="modal-tw" class="social-icon tw" aria-label="Twitter"><i class="ti ti-brand-twitter"></i></a>
+          <a href="#" id="modal-ln" class="social-icon ln" aria-label="LinkedIn"><i
+              class="ti ti-brand-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="whatsapp-cta" class="whatsapp-cta" style="display:none;">
+    <a id="whatsapp-cta-link" href="#" target="_blank" rel="noreferrer noopener" aria-label="Chat with us">
+      <span class="ti ti-brand-whatsapp"></span>
+      <span class="whatsapp-tooltip">Chat with us</span>
+    </a>
+  </div>
+
+  <!-- Team Overview Modal -->
+  <div id="team-modal" class="creator-modal-container overview" role="dialog" aria-modal="true">
+    <button type="button" class="modal-close-btn" id="team-modal-close" aria-label="Close modal">&times;</button>
+    <div class="modal-body-content single-col">
+      <span class="creator-role-badge">ashmija in color Collective</span>
+      <h3 class="creator-name-title">Our Curation & Network</h3>
+      <p class="creator-bio-text">
+        At ashmija in color, we maintain a highly curated network of over 120 professional muralists, traditional
+        painters, graffiti artists, and sculptors across South Asia.
+      </p>
+      <p class="creator-bio-text">
+        Our artists are selected not only for their exceptional visual craftsmanship but also for their understanding of
+        architectural scale, safety standards, and durable material applications. We handle the entire lifecycle: design
+        licensing, digital mockup staging, scaffold logistics, and weather-proof varnishing.
+      </p>
+      <div class="creator-stats-wrap" style="margin-top:1.5rem;justify-content:flex-start">
+        <span class="creator-stat-badge">✦ 120+ Active Artists</span>
+        <span class="creator-stat-badge">✦ 38+ Cities Connected</span>
+        <span class="creator-stat-badge">✦ Staging & Safety Audited</span>
+      </div>
+      <div style="margin-top:2rem;display:flex;gap:1rem">
+        <button class="btn"
+          style="padding:.75rem 1.8rem;border:none;border-radius:6px;background:var(--gold);color:white;cursor:pointer;font-weight:500;font-size:.85rem;transition:background .3s"
+          onclick="document.getElementById('contact-section').scrollIntoView({behavior:'smooth'}); document.getElementById('team-modal').classList.remove('active'); document.getElementById('modal-backdrop').classList.remove('active');">Book
+          an Artist</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Reviews Modal -->
+  <div id="all-reviews-modal" class="creator-modal-container all-reviews-modal" role="dialog" aria-modal="true">
+    <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
+    <div class="modal-body-content single-col" style="max-height:85vh;overflow-y:auto;padding:2.8rem 2.4rem 2.2rem;">
+      <span class="creator-role-badge">Client Testimonials</span>
+      <h3 class="creator-name-title" style="margin-bottom:1.5rem;">All Client Reviews</h3>
+      <div id="all-reviews-list" class="all-reviews-list">
+        <!-- Reviews will be loaded dynamically here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating & Review Modal -->
+  <div id="rating-modal" class="creator-modal-container review-modal" role="dialog" aria-modal="true">
+    <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
+    <div class="modal-body-content single-col">
+      <span class="creator-role-badge">Share Your Review</span>
+      <h3 class="creator-name-title">Rate ashmija in color</h3>
+
+      <div class="review-avatar-options">
+        <label class="rating-avatar selected">
+          <input type="radio" name="review-avatar"
+            value="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&h=150"
+            checked>
+          <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&h=150"
+            alt="Reviewer option one">
+        </label>
+        <label class="rating-avatar">
+          <input type="radio" name="review-avatar"
+            value="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150">
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150"
+            alt="Reviewer option two">
+        </label>
+        <label class="rating-avatar">
+          <input type="radio" name="review-avatar"
+            value="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150">
+          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150"
+            alt="Reviewer option three">
+        </label>
+      </div>
+
+      <form id="review-form" class="review-form">
+        <div class="form-row">
+          <label>Your Photo (optional - overrides avatar selection)
+            <input type="file" id="review-avatar-file" accept="image/*" style="margin-top: 0.25rem; width: 100%;">
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Full Name
+            <input type="text" name="reviewerName" placeholder="Your name" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Company / Role
+            <input type="text" name="reviewerCompany" placeholder="Your title or company" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Rating
+            <select name="reviewRating" required>
+              <option value="5">5 - Excellent</option>
+              <option value="4">4 - Very Good</option>
+              <option value="3">3 - Good</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Your Review
+            <textarea name="reviewText" rows="4" placeholder="Share your experience..." required></textarea>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Project Work Photo
+            <input type="file" id="review-work-image" accept="image/*" style="margin-top: 0.25rem; width: 100%;">
+          </label>
+        </div>
+        <button type="submit" class="btn-primary" id="submit-review-btn">Submit Review</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Testimonial Image Modal -->
+  <div id="testimonial-image-modal" class="creator-modal-container" role="dialog" aria-modal="true">
+    <button type="button" class="modal-close-btn" id="testimonial-modal-close" aria-label="Close modal">&times;</button>
+    <div class="modal-body-content single-col" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.2rem;">
+      <div class="modal-image-preview-wrap" style="width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.15); max-height: 70vh;">
+        <img id="testimonial-modal-img" src="" alt="Project Image" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+      </div>
+      <div class="testimonial-modal-info" style="text-align: center; width: 100%;">
+        <span class="creator-role-badge" id="testimonial-modal-place" style="font-size: 0.9rem; padding: 0.4rem 1.2rem; background: var(--gold); color: white; border-radius: 20px;">Place</span>
+        <h3 id="testimonial-modal-client" style="font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: var(--ink); margin-top: 0.8rem; margin-bottom: 0.4rem;">Client</h3>
+      </div>
+    </div>
+  </div>
+  
+</body>
+
+</html>
