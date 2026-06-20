@@ -379,6 +379,11 @@
       </div>
     </section>
 
+    <div id="review-ml-reply-card" class="review-ml-reply-card glass-card" hidden>
+      <div class="reply-card-heading">AI-generated reply</div>
+      <div class="reply-card-body">Your custom reply will appear here after review submission.</div>
+    </div>
+
     <div class="divider"></div>
 
     <!-- Artists Section -->
@@ -876,6 +881,18 @@
         </div>
         <button type="submit" class="btn-primary" id="submit-review-btn">Submit Review</button>
       </form>
+    </div>
+  </div>
+
+  <!-- ML Reply Confirmation Modal -->
+  <div id="ml-reply-modal" class="creator-modal-container review-modal" role="dialog" aria-modal="true">
+    <button type="button" class="modal-close-btn" id="ml-reply-modal-close" aria-label="Close modal">&times;</button>
+    <div class="modal-body-content single-col" style="padding: 2.8rem 2.4rem 2.2rem;">
+      <div id="ml-reply-modal-emoji" style="font-size: 3.5rem; text-align: center; margin-bottom: 0.8rem; line-height: 1; animation: emojiPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;"></div>
+      <div id="ml-reply-modal-text" class="reply-card-body" style="background: #fffdf6; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 1.4rem 1.6rem; text-align: left; font-size: 0.98rem; line-height: 1.7; color: var(--ink2); white-space: pre-line; box-shadow: 0 8px 24px rgba(0,0,0,0.04);">
+        <!-- ML reply text will be inserted here -->
+      </div>
+      <button type="button" class="btn-secondary" id="ml-reply-modal-ok-btn" style="margin-top: 1.8rem; padding: 0.7rem 2.2rem;">Got it</button>
     </div>
   </div>
 

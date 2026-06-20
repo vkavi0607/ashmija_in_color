@@ -1,0 +1,17 @@
+# ML Model API Server Requirements
+# Core Python dependencies for the review reply ML system
+
+# The ml_model.py and reply_engine.py primarily use Python standard library
+# (json, csv, re, math, pathlib, collections, hashlib)
+
+# Optional dependencies for future ML model training and enhancements:
+# Uncomment these if you need to retrain the model or add new ML features
+
+# numpy==1.26.4
+# scikit-learn==1.3.2
+# pandas==2.1.3
+# scipy==1.11.4
+
+# Development and testing dependencies (optional):
+# pytest==7.4.3
+# pytest-cov==4.1.0
