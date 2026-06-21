@@ -1,0 +1,25 @@
+-- Sample data for ashmija_in_color
+-- Run this AFTER running mysql_schema.sql
+
+INSERT INTO portfolio (title, artist_name, year, client, art_type, location, area, image_url, is_featured, is_hidden, display_order) VALUES
+('Botanical Bloom', 'Priya Natarajan', 2024, 'Google India', 'Botanical Mural', 'Chennai, Tamil Nadu', '2,400 sq. ft.', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=600&h=900&q=80', 1, 0, 0),
+('Urban Grid', 'Arun K.', 2024, 'WeWork', 'Geometric Street Art', 'Bangalore, Karnataka', '850 sq. ft.', 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=600&h=400&q=80', 0, 0, 1),
+('Ocean Memory', 'Meera S.', 2023, 'Taj Fisherman''s Cove', 'Abstract Fluid Art', 'Kovalam, Chennai', '1,200 sq. ft.', 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=600&h=400&q=80', 0, 0, 2),
+('Golden Axis', 'Ravi S.', 2024, 'ITC Grand Chola', 'Gold Leaf Abstract', 'Guindy, Chennai', '680 sq. ft.', 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80', 0, 0, 3),
+('Nebula', 'Divya M.', 2024, 'Zoho Corporation', 'Cosmic Mural', 'Tenkasi, Tamil Nadu', '1,500 sq. ft.', 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80', 0, 0, 4);
+
+INSERT INTO artists (name, role, bio, quote, stats, image_url, fb_url, tw_url, ln_url, is_available, display_order) VALUES
+('Vikram', 'Lead Artist, Urban & Abstract', 'Specializing in geometric abstraction and large-scale urban realism, Vikram has spent the last 12 years collaborating with corporate campuses, hospitality interiors, and public districts.', 'Art should not be confined behind closed doors.', 'Featured in Elle Décor, 80+ Projects', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400&h=500', '#', '#', '#', 1, 0),
+('Ashmija', 'Lead Artist, Muralist', 'Merging intricate botanical illustrations with architectural backdrops, Ashmija''s nature-inspired murals bring organic life and calm to high-end interiors.', 'My work bridges the gap between concrete rooms and the wild serenity of nature.', '120+ Murals, National Art Award', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400&h=500', '#', '#', '#', 1, 1),
+('Meera S.', 'Fine Art & Botanical Specialist', 'With a background in classical fine art, Meera translates traditional oil and watercolor textures onto large indoor surfaces with detailed foliage patterns.', 'A mural is a dialogue with the room''s geometry.', '90+ Paintings, Gold Medalist in Fine Arts', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=500', '#', '#', '#', 1, 2);
+
+INSERT INTO reviews (name, company, avatar_url, rating, review_text, is_approved, is_pinned) VALUES
+('Kavitha', 'Director, Google Chennai', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150', 5, 'ashmija in color transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.', 1, 1),
+('Vikram', 'Curator, Taj Group', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150', 5, 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals designed did exactly that. Absolute masterpiece.', 1, 1),
+('Ananya', 'Architect, Nair Villas', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150', 5, 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.', 1, 1);
+
+INSERT INTO faqs (question, answer, display_order) VALUES
+('What types of mural services do you offer?', 'We offer a full range of mural services including botanical murals, geometric street art, abstract fluid art, corporate branding walls, restaurant themed murals, and custom residential art. Each project is tailored to your space and vision.', 0),
+('How long does a typical mural project take?', 'Project timelines vary based on size and complexity. A standard 500-1000 sq. ft. mural typically takes 1-2 weeks from design to completion. We provide detailed timelines during our initial consultation and keep you updated throughout the process.', 1),
+('Do you work outside of Chennai?', 'Yes! We operate across 38+ cities in India. Our network of 120+ artists allows us to handle projects pan-India. Travel and logistics are managed by our team — you focus on the vision, we handle everything else.', 2),
+('What materials and paints do you use?', 'We use only premium, eco-certified UV-resistant paints that last 10+ years outdoors. All materials are weather-proof, non-toxic, and safe for indoor and outdoor use. We provide a warranty on all our work.', 3);

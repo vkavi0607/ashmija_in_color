@@ -240,11 +240,12 @@ def generate_artist_reply(review: str, customer_name: str | None = None) -> dict
     sentiment, sentiment_confidence, primary_topic, topic_confidence = predict_review_labels(review)
     topics = _detect_review_topics(review, primary_topic)
 
-    reply = _build_long_reply(customer_name, sentiment, topics, review)
+    # Always generate a positive reply - the ML detects topic but reply is always warm
+    reply = _build_positive_reply(customer_name, topics, review)
 
     return {
         "reply": reply,
-        "sentiment": sentiment,
+        "sentiment": "positive",
         "sentiment_confidence": sentiment_confidence,
         "topics": topics,
         "topic_confidence": topic_confidence,
@@ -349,47 +350,73 @@ def _extract_specific_feedback(review: str, topics: list[str]) -> str:
     return topic_names
 
 
-def _build_long_reply(
+def _build_positive_reply(
     customer_name: str | None,
-    sentiment: str,
     topics: list[str],
     review: str,
 ) -> str:
+    """Generate a short, customized positive reply based on review content."""
     name = customer_name.title() if customer_name else "valued customer"
-    topic_names = TOPIC_LABELS[topics[0]] if len(topics) == 1 else _join_words([TOPIC_LABELS[t] for t in topics])
+    topic = topics[0] if topics else "general"
+    topic_label = TOPIC_LABELS[topic]
     
-    if sentiment == "positive":
-        review_line = random.choice(REVIEW_LINES[topics[0]])
-        action_line = random.choice(TOPIC_LINES[topics[0]])
-        return f"""Dear {name},
+    reply_line = _generate_reply_line(review, topic_label)
+    
+    return f"""Dear {name},
 
-Thank you so much for your wonderful feedback about {topic_names}! {review_line} We're truly honored that you took the time to share your experience with ashmija in color.
-
-{action_line} Your words inspire us to continue creating beautiful, meaningful art that transforms spaces and touches hearts.
+{reply_line}
 
 With gratitude,
 The ashmija in color Team"""
+
+
+def _generate_reply_line(review: str, topic_label: str) -> str:
+    """Generate a single unique reply line based on exact review content."""
+    review_lower = review.lower()
     
-    if sentiment == "mixed":
-        action_line = _join_words([random.choice(TOPIC_LINES[t]) for t in topics])
-        return f"""Dear {name},
-
-Thank you for your honest feedback about {topic_names}. We truly value your experience with ashmija in color and take every review to heart.
-
-We're committed to improving, and {action_line.lower()} Your feedback helps us grow and serve you better.
-
-With appreciation,
-The ashmija in color Team"""
+    # Each reply is unique based on keyword combinations
+    is_delivery = any(w in review_lower for w in ["delivery", "shipping", "package", "courier", "handover"])
+    is_late = any(w in review_lower for w in ["late", "delayed", "time"])
+    is_damage = any(w in review_lower for w in ["damage", "broken", "crack", "destroyed"])
+    is_design = any(w in review_lower for w in ["design", "mural", "pattern", "motif"])
+    is_quality = any(w in review_lower for w in ["quality", "finish", "texture", "brush"])
+    is_color = any(w in review_lower for w in ["color", "shade", "paint"])
+    is_comms = any(w in review_lower for w in ["communication", "response", "update", "message", "call"])
+    is_price = any(w in review_lower for w in ["price", "cost", "budget", "expensive", "rate"])
+    is_canvas = any(w in review_lower for w in ["canvas", "portrait", "frame"])
+    is_positive = any(w in review_lower for w in ["amazing", "wonderful", "super", "semma", "excellent", "outstanding", "fantastic", "beautiful", "lovely", "great", "nice", "good", "perfect", "nalla", "worth", "awesome"])
     
-    action_line = _join_words([random.choice(TOPIC_LINES[t]) for t in topics])
-    return f"""Dear {name},
+    # Positive reviews first - best match for happy customers
+    if is_positive:
+        return f"We are so happy to hear you loved the work! Your kind words mean everything to our entire team."
+    if is_delivery and is_late:
+        return f"Thank you for sharing your thoughts about our delivery. Your feedback on the timing helps us improve our logistics and serve you better."
+    if is_delivery and is_damage:
+        return f"We appreciate your feedback about the delivery condition. Your input helps us strengthen our packaging for future shipments."
+    if is_delivery:
+        return f"Thanks for your feedback on the delivery experience. We're always working to make sure your artwork arrives safely and on time."
+    if is_canvas and is_damage:
+        return f"Thank you for letting us know about the canvas. Every detail matters, and your feedback helps us protect our artwork better during transit."
+    if is_canvas and is_quality:
+        return f"We value your thoughts on the canvas quality. Your feedback directly helps our artists refine their craft."
+    if is_canvas:
+        return f"Thanks for sharing your experience with our canvas artwork. Your feedback helps us improve every custom piece we create."
+    if is_design and is_color:
+        return f"Your feedback on the design and colors is valuable. We're always refining our creative process to match your vision perfectly."
+    if is_design:
+        return f"Thank you for your thoughts on the design. Every mural is crafted with care, and your insights help us grow."
+    if is_quality and is_color:
+        return f"We appreciate your feedback on the artwork quality and colors. Our team is dedicated to delivering exceptional results."
+    if is_quality:
+        return f"Your feedback on the work quality is important to us. We're committed to giving every detail the attention it deserves."
+    if is_comms:
+        return f"Thanks for your honest feedback on communication. We're always looking for ways to keep our clients more informed."
+    if is_price:
+        return f"We appreciate your perspective on pricing. Your feedback helps us ensure our work remains accessible and valuable."
+    
+    return f"Thank you for your thoughtful feedback about our {topic_label}. We truly value your perspective and use it to improve."
 
-Thank you for your feedback on {topic_names} — we sincerely apologize and are taking immediate action to improve.
 
-{action_line} We truly value your input and are committed to doing better.
-
-With sincere apologies,
-The ashmija in color Team"""
 def _build_short_reply(
     customer_name: str | None,
     sentiment: str,
