@@ -356,32 +356,37 @@ def _build_long_reply(
     review: str,
 ) -> str:
     name = customer_name.title() if customer_name else "valued customer"
-    topic_names = _join_words([TOPIC_LABELS[topic] for topic in topics])
-    specific_feedback = _extract_specific_feedback(review, topics)
+    topic_names = TOPIC_LABELS[topics[0]] if len(topics) == 1 else _join_words([TOPIC_LABELS[t] for t in topics])
     
     if sentiment == "positive":
+        review_line = random.choice(REVIEW_LINES[topics[0]])
+        action_line = random.choice(TOPIC_LINES[topics[0]])
         return f"""Dear {name},
 
-Thank you so much for your amazing review! We're truly honored that you took the time to share your experience with ashmija in color.
+Thank you so much for your wonderful feedback about {topic_names}! {review_line} We're truly honored that you took the time to share your experience with ashmija in color.
 
-Your words inspire us to continue creating beautiful, meaningful art that transforms spaces and touches hearts. We look forward to bringing more color and joy to your world!
+{action_line} Your words inspire us to continue creating beautiful, meaningful art that transforms spaces and touches hearts.
 
 With gratitude,
 The ashmija in color Team"""
     
     if sentiment == "mixed":
+        action_line = _join_words([random.choice(TOPIC_LINES[t]) for t in topics])
         return f"""Dear {name},
 
-Thank you for your honest feedback about {specific_feedback}. We truly value your experience with ashmija in color.
+Thank you for your honest feedback about {topic_names}. We truly value your experience with ashmija in color and take every review to heart.
 
-We're committed to improving {specific_feedback} and ensuring your next experience exceeds expectations. Your feedback helps us grow and serve you better.
+We're committed to improving, and {action_line.lower()} Your feedback helps us grow and serve you better.
 
 With appreciation,
 The ashmija in color Team"""
     
+    action_line = _join_words([random.choice(TOPIC_LINES[t]) for t in topics])
     return f"""Dear {name},
 
-Thank you for your feedback on {specific_feedback} — we sincerely apologize and are taking immediate action to improve.
+Thank you for your feedback on {topic_names} — we sincerely apologize and are taking immediate action to improve.
+
+{action_line} We truly value your input and are committed to doing better.
 
 With sincere apologies,
 The ashmija in color Team"""
@@ -406,7 +411,15 @@ def _build_short_reply(
 def _join_words(items: list[str]) -> str:
     if len(items) == 1:
         return items[0]
-    return f"{items[0]} and {items[1]}"
+    # For topic labels (short phrases like "canvas artwork" and "art quality"), join with "and"
+    first = items[0]
+    second = items[1]
+    # If items are full sentences (end with period), join with space instead of "and"
+    if first.rstrip().endswith('.') or second.rstrip().endswith('.'):
+        return f"{first.rstrip('. ')}. {second}"
+    if second.startswith(','):
+        return f"{first}{second}"
+    return f"{first} and {second}"
 
 
 def _get_random_smiley() -> str:
