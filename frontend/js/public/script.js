@@ -460,7 +460,7 @@ function initRatingModal() {
         let mlError = null;
         try {
           console.log('[review-form] requesting ML reply', { review: reviewText, customer_name: name });
-          const mlResponse = await fetch('http://127.0.0.1:8000/api/generate-reply', {
+          const mlResponse = await fetch('http://127.0.0.1:5000/api/generate-reply', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

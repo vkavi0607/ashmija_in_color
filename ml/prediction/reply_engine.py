@@ -385,18 +385,24 @@ def _generate_reply_line(review: str, topic_label: str) -> str:
     is_price = any(w in review_lower for w in ["price", "cost", "budget", "expensive", "rate"])
     is_canvas = any(w in review_lower for w in ["canvas", "portrait", "frame"])
     is_positive = any(w in review_lower for w in ["amazing", "wonderful", "super", "semma", "excellent", "outstanding", "fantastic", "beautiful", "lovely", "great", "nice", "good", "perfect", "nalla", "worth", "awesome"])
+    # Detect mixed reviews: contains both positive keywords AND negative/problem keywords with contrast words
+    has_contrast = any(w in review_lower for w in ["but", "however", "although", "though", "ana", "aana", "except"])
+    has_negative = is_damage or any(w in review_lower for w in ["satisfied illa", "sari illa", "disappointing", "poor", "bad", "worst", "terrible", "awful", "late", "delayed", "slow"])
+    is_mixed = has_contrast and has_negative and is_positive
     
-    # Positive reviews first - best match for happy customers
-    if is_positive:
-        return f"We are so happy to hear you loved the work! Your kind words mean everything to our entire team."
-    if is_delivery and is_late:
-        return f"Thank you for sharing your thoughts about our delivery. Your feedback on the timing helps us improve our logistics and serve you better."
+    # Priority 1: Damage/negative issues (even if positive keywords exist alongside contrast words like "but")
+    if is_mixed:
+        return f"Thank you for your honest feedback. We're sorry about the issue and will work on improving the {topic_label}."
     if is_delivery and is_damage:
         return f"We appreciate your feedback about the delivery condition. Your input helps us strengthen our packaging for future shipments."
-    if is_delivery:
-        return f"Thanks for your feedback on the delivery experience. We're always working to make sure your artwork arrives safely and on time."
     if is_canvas and is_damage:
         return f"Thank you for letting us know about the canvas. Every detail matters, and your feedback helps us protect our artwork better during transit."
+    if is_damage:
+        return f"Thank you for bringing this to our attention. We sincerely apologize and will address the quality concern immediately."
+    if is_delivery and is_late:
+        return f"Thank you for sharing your thoughts about our delivery. Your feedback on the timing helps us improve our logistics and serve you better."
+    if is_delivery:
+        return f"Thanks for your feedback on the delivery experience. We're always working to make sure your artwork arrives safely and on time."
     if is_canvas and is_quality:
         return f"We value your thoughts on the canvas quality. Your feedback directly helps our artists refine their craft."
     if is_canvas:
@@ -413,6 +419,10 @@ def _generate_reply_line(review: str, topic_label: str) -> str:
         return f"Thanks for your honest feedback on communication. We're always looking for ways to keep our clients more informed."
     if is_price:
         return f"We appreciate your perspective on pricing. Your feedback helps us ensure our work remains accessible and valuable."
+    
+    # Positive only after all negative/mixed checks pass
+    if is_positive:
+        return f"We are so happy to hear you loved the work! Your kind words mean everything to our entire team."
     
     return f"Thank you for your thoughtful feedback about our {topic_label}. We truly value your perspective and use it to improve."
 

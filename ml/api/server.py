@@ -80,9 +80,9 @@ class ReviewReplyHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
 
-def run() -> None:
-    server = ThreadingHTTPServer(("127.0.0.1", 8000), ReviewReplyHandler)
-    print("Mural Art Review Reply server running at http://127.0.0.1:8000")
+def run(port: int = 5000) -> None:
+    server = ThreadingHTTPServer(("127.0.0.1", port), ReviewReplyHandler)
+    print(f"Mural Art Review Reply server running at http://127.0.0.1:{port}")
     server.serve_forever()
 
 
