@@ -37,6 +37,18 @@
   const STORAGE_DIR = 'artists/';
   const TABLE       = 'artists';
 
+  function getPublicArtistAsset(fileName) {
+    const inAdminPage = /(^|\/)admin(\/|$)/.test(window.location.pathname || '');
+    return inAdminPage ? `../assets/artists/${fileName}` : `./assets/artists/${fileName}`;
+  }
+
+  function resolveFeaturedArtistImage(name, fallbackUrl) {
+    const normalized = String(name || '').trim().toLowerCase();
+    if (normalized === 'vikram') return getPublicArtistAsset('vikram-profile.jpg');
+    if (normalized === 'ashmija') return getPublicArtistAsset('ashmija-profile.jpg');
+    return fallbackUrl || '';
+  }
+
   /** Module-level state — reset each time initArtists() is called. */
   let _items       = [];     // current fetched artist rows
   let _sortable    = null;   // SortableJS instance on the grid
@@ -238,10 +250,14 @@
       .ar-form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0 16px;
+        gap: 18px 16px;
+        align-items: start;
+      }
+      .ar-form-grid .form-group {
+        min-width: 0;
+        margin-bottom: 0;
       }
       .ar-form-grid .form-group.full { grid-column: 1 / -1; }
-
       /* Quill editor inside modal */
       .ar-quill-wrap {
         border: 1px solid var(--beige3);
@@ -331,6 +347,33 @@
 
       /* Saving spinner in modal button */
       .ar-saving { display: inline-flex; align-items: center; gap: 6px; }
+
+      /* Responsive: Add/Edit Artist form on mobile */
+      @media (max-width: 768px) {
+        .ar-form-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .ar-upload-zone {
+          padding: 20px 14px;
+          font-size: 0.8rem;
+        }
+        .ar-img-preview {
+          height: 150px;
+        }
+        .ar-form-grid {
+          gap: 14px;
+        }
+        .ar-social-row {
+          gap: 6px;
+        }
+        .ar-social-row input.form-input {
+          min-width: 0;
+        }
+      }
     `;
 
     document.head.appendChild(style);
@@ -346,28 +389,12 @@
     const section = document.getElementById('section-artists');
     if (!section) return;
 
-    // Remove old table-based card
-    const oldCard = section.querySelector('.card');
-    if (oldCard) oldCard.remove();
-
     // Loading indicator
     if (!document.getElementById('artists-loading')) {
       const loader = document.createElement('div');
       loader.id = 'artists-loading';
       loader.innerHTML = `<span class="spinner"></span> Loading artists…`;
       section.appendChild(loader);
-    }
-
-    // Card grid
-    if (!document.getElementById('artists-grid')) {
-      const grid = document.createElement('div');
-      grid.id = 'artists-grid';
-      grid.innerHTML = `
-        <div id="artists-grid-empty" class="visible">
-          <i class="ti ti-user-circle"></i>
-          <p>No artists yet.<br>Click <strong>Add Artist</strong> to get started.</p>
-        </div>`;
-      section.appendChild(grid);
     }
   }
 
@@ -443,22 +470,46 @@
      ================================================================ */
 
   function renderGrid(items, query = '') {
+    const tableBody = document.getElementById('artists-table-body');
     const grid = document.getElementById('artists-grid');
-    if (!grid) return;
+    const queryText = query.toLowerCase();
 
-    // Remove existing cards, preserve empty-state placeholder
-    grid.querySelectorAll('.ar-card').forEach(c => c.remove());
-
-    const q = query.toLowerCase();
-    const visible = q
+    const visible = queryText
       ? items.filter(it =>
-          (it.name || '').toLowerCase().includes(q) ||
-          (it.role || '').toLowerCase().includes(q)
+          (it.name || '').toLowerCase().includes(queryText) ||
+          (it.role || '').toLowerCase().includes(queryText) ||
+          (it.city || '').toLowerCase().includes(queryText)
         )
       : items;
 
-    const emptyEl = document.getElementById('artists-grid-empty');
+    if (tableBody) {
+      if (visible.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="ti ti-palette empty-icon"></i>
+                <div class="empty-title">No artists yet</div>
+                <div class="empty-text">Add your first artist profile to showcase your team.</div>
+              </div>
+            </td>
+          </tr>`;
+        return;
+      }
+      tableBody.innerHTML = '';
 
+      visible.forEach((artist) => {
+        const row = buildAdminRow(artist);
+        tableBody.appendChild(row);
+      });
+      return;
+    }
+
+    if (!grid) return;
+
+    grid.querySelectorAll('.ar-card').forEach(c => c.remove());
+
+    const emptyEl = document.getElementById('artists-grid-empty');
     if (visible.length === 0) {
       if (emptyEl) emptyEl.classList.add('visible');
       return;
@@ -471,53 +522,54 @@
     });
   }
 
-  function buildAdminCard(artist) {
-    const card = document.createElement('div');
-    card.className = 'ar-card';
-    card.dataset.id = artist.id;
+  function buildAdminRow(artist) {
+    const row = document.createElement('tr');
+    row.className = 'ar-row';
+    row.dataset.id = artist.id;
 
-    // Photo
-    const photoHTML = artist.image_url
-      ? `<img class="ar-card-photo" src="${escHtml(artist.image_url)}" alt="${escHtml(artist.name || '')}" loading="lazy">`
-      : `<div class="ar-card-photo-placeholder"><i class="ti ti-user-circle"></i></div>`;
+    const isFeatured = artist.is_available !== false;
+    const displayOrder = artist.display_order ?? '—';
+    const city = artist.city || '—';
 
-    // Availability badge
-    const isAvail   = artist.is_available !== false;
-    const badgeText = isAvail ? '● Available' : '● Unavailable';
-    const badgeCls  = isAvail ? 'available' : 'unavailable';
-
-    card.innerHTML = `
-      <span class="ar-avail-badge ${badgeCls}" data-id="${artist.id}" title="Click to toggle availability">
-        ${badgeText}
-      </span>
-      <div class="ar-card-drag" title="Drag to reorder">
-        <i class="ti ti-grip-vertical"></i>
-      </div>
-      ${photoHTML}
-      <div class="ar-card-body">
+    row.innerHTML = `
+      <td>
+        <button type="button" class="ar-card-drag" title="Drag to reorder" aria-label="Drag to reorder">
+          <i class="ti ti-grip-vertical"></i>
+        </button>
+      </td>
+      <td>
         <div class="ar-card-name" title="${escHtml(artist.name || '')}">${escHtml(artist.name || '(No name)')}</div>
+      </td>
+      <td>
         <div class="ar-card-role">${escHtml(artist.role || '—')}</div>
+      </td>
+      <td>${escHtml(city)}</td>
+      <td>
+        <button type="button" class="ar-avail-badge ${isFeatured ? 'available' : 'unavailable'}" title="Click to toggle featured status">
+          ${isFeatured ? '● Featured' : '● Hidden'}
+        </button>
+      </td>
+      <td>${escHtml(displayOrder)}</td>
+      <td>
         <div class="ar-card-actions">
-          <button class="btn-icon btn-sm ar-btn-edit"   data-id="${artist.id}" title="Edit artist">
+          <button class="btn-icon btn-sm ar-btn-edit" data-id="${artist.id}" title="Edit artist">
             <i class="ti ti-pencil"></i>
           </button>
           <button class="btn-icon btn-sm danger ar-btn-delete" data-id="${artist.id}" title="Delete artist">
             <i class="ti ti-trash"></i>
           </button>
         </div>
-      </div>
+      </td>
     `;
 
-    // Availability badge click — direct toggle on card
-    card.querySelector('.ar-avail-badge').addEventListener('click', (e) => {
+    row.querySelector('.ar-avail-badge').addEventListener('click', (e) => {
       e.stopPropagation();
       toggleAvailability(artist.id);
     });
+    row.querySelector('.ar-btn-edit').addEventListener('click', () => openArtistModal(artist.id));
+    row.querySelector('.ar-btn-delete').addEventListener('click', () => confirmDelete(artist.id));
 
-    card.querySelector('.ar-btn-edit').addEventListener('click', () => openArtistModal(artist.id));
-    card.querySelector('.ar-btn-delete').addEventListener('click', () => confirmDelete(artist.id));
-
-    return card;
+    return row;
   }
 
 
@@ -527,14 +579,16 @@
 
   function initSortable() {
     const grid = document.getElementById('artists-grid');
-    if (!grid || !window.Sortable) return;
+    const tableBody = document.getElementById('artists-table-body');
+    const sortableTarget = tableBody || grid;
+    if (!sortableTarget || !window.Sortable) return;
 
     if (_sortable) {
       _sortable.destroy();
       _sortable = null;
     }
 
-    _sortable = window.Sortable.create(grid, {
+    _sortable = window.Sortable.create(sortableTarget, {
       animation   : 180,
       handle      : '.ar-card-drag',
       ghostClass  : 'sortable-ghost',
@@ -544,12 +598,16 @@
   }
 
   async function onSortEnd() {
+    const tableBody = document.getElementById('artists-table-body');
     const grid = document.getElementById('artists-grid');
-    if (!grid) return;
+    const source = tableBody || grid;
+    if (!source) return;
 
-    const cards   = [...grid.querySelectorAll('.ar-card')];
-    const updates = cards.map((card, index) => ({
-      id            : card.dataset.id,
+    const items = tableBody
+      ? [...tableBody.querySelectorAll('.ar-row')]
+      : [...grid.querySelectorAll('.ar-card')];
+    const updates = items.map((item, index) => ({
+      id            : item.dataset.id,
       display_order : index,
     }));
 
@@ -1069,7 +1127,7 @@
         const role    = artist.role    || '';
         const bio     = artist.bio     || '';
         const quote   = artist.quote   || '';
-        const imgUrl  = artist.image_url || '';
+        const imgUrl  = resolveFeaturedArtistImage(artist.name, artist.image_url || '');
         const stats   = artist.stats   || '';
         const fbUrl   = artist.fb_url  || '#';
         const twUrl   = artist.tw_url  || '#';
@@ -1203,13 +1261,16 @@
   function setLoading(on) {
     const loader = document.getElementById('artists-loading');
     const grid   = document.getElementById('artists-grid');
+    const tableBody = document.getElementById('artists-table-body');
     if (!loader) return;
     if (on) {
       loader.classList.add('visible');
       if (grid) grid.style.opacity = '0.4';
+      if (tableBody) tableBody.style.opacity = '0.4';
     } else {
       loader.classList.remove('visible');
       if (grid) grid.style.opacity = '';
+      if (tableBody) tableBody.style.opacity = '';
     }
   }
 

@@ -155,17 +155,17 @@
 
     openModal({
       title: isEdit ? 'Edit FAQ Item' : 'Add FAQ Item',
-      size: 'large',
+      size: 'lg',
       bodyHTML: `
-        <div class="form-grid">
-          <label>
-            Question
-            <input type="text" id="faq-question-input" value="${escapeHtml(faq.question || '')}" placeholder="Enter a question" />
-          </label>
-          <label style="grid-column:1/-1;">
-            Answer
-            <div id="faq-editor" style="min-height:240px;background:#fff;border:1px solid #ddd;border-radius:10px;"></div>
-          </label>
+        <div class="faq-form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="faq-question-input">Question</label>
+            <input class="form-input" type="text" id="faq-question-input" value="${escapeHtml(faq.question || '')}" placeholder="Enter a question" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="faq-editor">Answer</label>
+            <div id="faq-editor" class="faq-editor"></div>
+          </div>
         </div>
       `,
       onConfirm: async function () {

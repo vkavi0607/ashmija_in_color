@@ -17,7 +17,7 @@
   <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
 
   <!-- Admin CSS -->
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/admin.css?v=20260620-faq-form" />
 </head>
 
 <body>
@@ -42,7 +42,7 @@
 
       <div class="login-input-wrap">
         <i class="ti ti-mail input-icon"></i>
-        <input type="email" id="login-email" placeholder="admin@artwallstudio.com" autocomplete="email" />
+        <input type="email" id="login-email" placeholder="admin@ashmijaincolor.in" autocomplete="email" />
       </div>
 
       <div class="login-input-wrap">
@@ -199,41 +199,33 @@
           </div>
         </div>
 
-        <!-- Stat Cards -->
         <div class="stats-grid" id="stats-grid">
-
           <div class="stat-card">
             <i class="ti ti-photo stat-icon"></i>
             <div class="stat-label">Portfolio Items</div>
             <div class="stat-value" id="stat-portfolio">—</div>
             <div class="stat-delta"><i class="ti ti-trending-up"></i> Loading…</div>
           </div>
-
           <div class="stat-card">
             <i class="ti ti-palette stat-icon"></i>
             <div class="stat-label">Active Artists</div>
             <div class="stat-value" id="stat-artists">—</div>
             <div class="stat-delta"><i class="ti ti-trending-up"></i> Loading…</div>
           </div>
-
           <div class="stat-card">
             <i class="ti ti-message-2 stat-icon"></i>
             <div class="stat-label">New Inquiries</div>
             <div class="stat-value" id="stat-inquiries">—</div>
             <div class="stat-delta"><i class="ti ti-clock"></i> Loading…</div>
           </div>
-
           <div class="stat-card">
             <i class="ti ti-star stat-icon"></i>
             <div class="stat-label">Avg. Rating</div>
             <div class="stat-value" id="stat-rating">—</div>
             <div class="stat-delta"><i class="ti ti-trending-up"></i> Loading…</div>
           </div>
-
         </div>
-        <!-- /stats-grid -->
 
-        <!-- Recent Inquiries Quick Table -->
         <div class="card" style="margin-bottom:24px;">
           <div class="card-header">
             <span class="card-title">Recent Inquiries</span>
@@ -267,7 +259,6 @@
           </div>
         </div>
 
-        <!-- Recent Reviews Quick Table -->
         <div class="card">
           <div class="card-header">
             <span class="card-title">Pending Reviews</span>
@@ -303,7 +294,6 @@
 
       </div>
       <!-- /#section-dashboard -->
-
 
       <!-- ────────────────────────────────────────
            PORTFOLIO SECTION
@@ -358,10 +348,9 @@
       </div>
       <!-- /#section-portfolio -->
 
-
-      <!-- ────────────────────────────────────────
+      <!-- ----------------------------------------
            ARTISTS SECTION
-           ──────────────────────────────────────── -->
+           ---------------------------------------- -->
       <div id="section-artists" class="admin-section">
 
         <div class="section-header">
@@ -372,7 +361,7 @@
           <div class="section-actions">
             <div class="search-bar">
               <i class="ti ti-search"></i>
-              <input type="text" placeholder="Search artists…" id="artists-search" />
+              <input type="text" placeholder="Search artists�" id="artists-search" />
             </div>
             <button class="btn btn-primary btn-sm" id="btn-add-artist">
               <i class="ti ti-plus"></i> Add Artist
@@ -413,9 +402,9 @@
       <!-- /#section-artists -->
 
 
-      <!-- ────────────────────────────────────────
+      <!-- ----------------------------------------
            INQUIRIES SECTION
-           ──────────────────────────────────────── -->
+           ---------------------------------------- -->
       <div id="section-inquiries" class="admin-section">
 
         <div class="section-header">
@@ -499,6 +488,9 @@
                   <th style="width:36px;"></th>
                   <th>Client</th>
                   <th>Company</th>
+                  <th>Location</th>
+                  <th>Photo</th>
+                  <th>Review</th>
                   <th>Rating</th>
                   <th>Featured</th>
                   <th>Status</th>
@@ -508,7 +500,7 @@
               </thead>
               <tbody id="reviews-table-body">
                 <tr>
-                  <td colspan="8">
+                  <td colspan="11">
                     <div class="empty-state">
                       <i class="ti ti-star empty-icon"></i>
                       <div class="empty-title">No reviews yet</div>
@@ -720,8 +712,8 @@
   <script src="js/portfolio.js"></script>
   <script src="js/artists.js"></script>
   <script src="js/inquiries.js"></script>
-  <script src="js/faqs.js"></script>
-  <script src="js/reviews.js"></script>
+  <script src="js/faqs.js?v=20260620-faq-form"></script>
+  <script src="js/reviews.js?v=20260620-review-form"></script>
   <script src="js/config.js"></script>
 
   <!-- ================================================================
@@ -790,5 +782,74 @@
       if (e.key === 'Escape') closeModal();
     });
   </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const artistSection = document.getElementById('artists-section');
+      if (!artistSection || typeof openModal !== 'function') return;
+
+      const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (ch) => (
+        {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        }[ch]
+      ));
+
+      artistSection.querySelectorAll('.creator-card').forEach(function (card) {
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', 'Open artist profile');
+
+        const openArtistProfile = function () {
+          const name = card.getAttribute('data-name') || '';
+          const role = card.getAttribute('data-role') || '';
+          const bio = card.getAttribute('data-bio') || '';
+          const image = card.getAttribute('data-image') || '';
+          const stats = (card.getAttribute('data-stats') || '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          const statsHTML = stats.length
+            ? `<div class="artist-profile-stats">${
+                stats.map(stat => `<span class="artist-profile-stat">${escapeHtml(stat)}</span>`).join('')
+              }</div>`
+            : '';
+
+          openModal({
+            title: name || 'Artist Profile',
+            size: 'lg',
+            bodyHTML: `
+              <div class="artist-profile-modal">
+                <div class="artist-profile-copy">
+                  <div class="artist-profile-name">${escapeHtml(name)}</div>
+                  <div class="artist-profile-role">${escapeHtml(role)}</div>
+                  <p class="artist-profile-bio">${escapeHtml(bio)}</p>
+                  ${statsHTML}
+                </div>
+                <div class="artist-profile-portrait">
+                  <div class="artist-profile-portrait-inner">
+                    <img src="${escapeHtml(image)}" alt="${escapeHtml(name)}">
+                  </div>
+                </div>
+              </div>
+            `,
+          });
+        };
+
+        card.addEventListener('click', openArtistProfile);
+        card.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openArtistProfile();
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
+

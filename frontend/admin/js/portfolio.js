@@ -542,7 +542,7 @@
       const failed = results.find(r => r.error);
       if (failed) throw failed.error;
 
-      await window.logAudit('portfolio', 'reorder', { count: updates.length });
+      await logAudit('portfolio', 'reorder', { count: updates.length });
       showToast('success', 'Order saved', `Reordered ${updates.length} items.`);
     } catch (err) {
       console.error('[portfolio] reorder error:', err);
@@ -593,7 +593,7 @@
         .in('id', ids);
       if (error) throw error;
 
-      await window.logAudit('portfolio', 'bulk_hide', { ids });
+      await logAudit('portfolio', 'bulk_hide', { ids });
       showToast('success', 'Hidden', `${ids.length} item(s) are now hidden.`);
       _bulkSelected.clear();
       refreshBulkBar();
@@ -636,7 +636,7 @@
           const { error } = await window.supabase.from(TABLE).delete().in('id', ids);
           if (error) throw error;
 
-          await window.logAudit('portfolio', 'bulk_delete', { ids });
+          await logAudit('portfolio', 'bulk_delete', { ids });
           showToast('success', 'Deleted', `${n} item${n > 1 ? 's' : ''} deleted.`);
           _bulkSelected.clear();
           refreshBulkBar();
@@ -665,7 +665,7 @@
         .from(TABLE).update({ is_featured: newVal }).eq('id', id);
       if (error) throw error;
       item.is_featured = newVal;
-      await window.logAudit('portfolio', 'toggle_featured', { id, is_featured: newVal });
+      await logAudit('portfolio', 'toggle_featured', { id, is_featured: newVal });
       showToast('success', newVal ? 'Featured' : 'Unfeatured', `"${item.title}" updated.`);
       renderGrid(_items, document.getElementById('portfolio-search')?.value.trim() || '');
     } catch (err) {
@@ -683,7 +683,7 @@
         .from(TABLE).update({ is_hidden: newVal }).eq('id', id);
       if (error) throw error;
       item.is_hidden = newVal;
-      await window.logAudit('portfolio', 'toggle_hidden', { id, is_hidden: newVal });
+      await logAudit('portfolio', 'toggle_hidden', { id, is_hidden: newVal });
       showToast('success', newVal ? 'Hidden' : 'Visible', `"${item.title}" updated.`);
       renderGrid(_items, document.getElementById('portfolio-search')?.value.trim() || '');
     } catch (err) {
@@ -726,7 +726,7 @@
           const { error } = await window.supabase.from(TABLE).delete().eq('id', id);
           if (error) throw error;
 
-          await window.logAudit('portfolio', 'delete', { id, title: item.title });
+          await logAudit('portfolio', 'delete', { id, title: item.title });
           showToast('success', 'Deleted', `"${item.title}" removed.`);
           _items = _items.filter(i => i.id !== id);
           renderGrid(_items, document.getElementById('portfolio-search')?.value.trim() || '');
@@ -970,7 +970,7 @@
           .from(TABLE).update(payload).eq('id', _editingId);
         if (error) throw error;
 
-        await window.logAudit('portfolio', 'update', { id: _editingId, title });
+        await logAudit('portfolio', 'update', { id: _editingId, title });
         showToast('success', 'Saved', `"${title}" updated successfully.`);
       } else {
         /* INSERT — append after existing items */
@@ -983,7 +983,7 @@
         const { error } = await window.supabase.from(TABLE).insert(payload);
         if (error) throw error;
 
-        await window.logAudit('portfolio', 'create', { title });
+        await logAudit('portfolio', 'create', { title });
         showToast('success', 'Added', `"${title}" added to portfolio.`);
       }
 
@@ -1056,10 +1056,10 @@
         return;
       }
 
-      /* Build HTML — first item is 'tall' (440px), rest are 215px */
+      /* Build HTML — first item is 'tall' (330px), rest are 150px */
       const html = items.map((item, index) => {
         const isTall   = index === 0;
-        const height   = isTall ? '440px' : '215px';
+        const height   = isTall ? '330px' : '150px';
         const tallClass = isTall ? ' tall' : '';
 
         const imgTag = item.image_url
@@ -1159,6 +1159,10 @@
 
       galleryObserver.observe(galleryGrid);
 
+      if (typeof window.initCreationsShowcase === 'function') {
+        window.initCreationsShowcase();
+      }
+
     } catch (err) {
       console.error('[portfolio] renderPortfolioToMainSite error:', err);
       galleryGrid.innerHTML = originalHtml;
@@ -1212,8 +1216,28 @@
   }
 
   /** Thin wrappers so calls read cleanly even when window.* prefix would be noisy. */
-  function openModal  (opts)  { if (window.openModal)  window.openModal(opts);  }
-  function closeModal ()      { if (window.closeModal) window.closeModal();      }
-  function showToast  (t, ti, m) { if (window.showToast) window.showToast(t, ti, m); }
+  function openModal (opts) {
+    if (window.openModal) window.openModal(opts);
+  }
+
+  function closeModal () {
+    if (window.closeModal) window.closeModal();
+  }
+
+  function showToast (type, title, message) {
+    if (!window.showToast) return;
+    const text = message ? `${title}: ${message}` : title;
+    window.showToast(text, type);
+  }
+
+  async function logAudit (module, action, details = {}) {
+    try {
+      if (typeof window.logAudit === 'function') {
+        await window.logAudit(module, action, details);
+      }
+    } catch (err) {
+      console.warn('[portfolio] audit log skipped:', err);
+    }
+  }
 
 })();

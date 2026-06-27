@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name         text,
   company      text,
+  location     text,
   review_text  text,
   rating       int,
   avatar_url   text,
@@ -272,16 +273,16 @@ WHERE NOT EXISTS (SELECT 1 FROM artists WHERE name = 'Meera S.');
 -- ============================================================
 -- 8. REVIEWS SEED DATA
 -- ============================================================
-INSERT INTO reviews (name, company, review_text, rating, avatar_url, is_approved, is_pinned)
-SELECT 'Kavitha', 'Director, Google Chennai', 'ArtWall transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.', 5, 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150', true, true
+INSERT INTO reviews (name, company, location, review_text, rating, avatar_url, is_approved, is_pinned)
+SELECT 'Kavitha', 'Director, Google Chennai', 'Chennai', 'ArtWall transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.', 5, 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150', true, true
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE name = 'Kavitha');
 
-INSERT INTO reviews (name, company, review_text, rating, avatar_url, is_approved, is_pinned)
-SELECT 'Vikram', 'Curator, Taj Group', 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.', 5, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150', true, true
+INSERT INTO reviews (name, company, location, review_text, rating, avatar_url, is_approved, is_pinned)
+SELECT 'Vikram', 'Curator, Taj Group', 'Chennai', 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.', 5, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150', true, true
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE name = 'Vikram');
 
-INSERT INTO reviews (name, company, review_text, rating, avatar_url, is_approved, is_pinned)
-SELECT 'Ananya', 'Architect, Nair Villas', 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.', 5, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150', true, true
+INSERT INTO reviews (name, company, location, review_text, rating, avatar_url, is_approved, is_pinned)
+SELECT 'Ananya', 'Architect, Nair Villas', 'Kochi', 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.', 5, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150', true, true
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE name = 'Ananya');
 
 

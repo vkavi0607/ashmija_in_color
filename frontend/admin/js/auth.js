@@ -17,6 +17,7 @@
  */
 
 (function () {
+  const ADMIN_EMAIL = 'admin@ashmijaincolor.in';
 
   /* ─── Internal helpers ──────────────────────────────────────────── */
 
@@ -76,6 +77,20 @@
     if (errEl) errEl.classList.add('show');
   }
 
+  function buildAdminAuthHint(errorMessage) {
+    const message = String(errorMessage || '').toLowerCase();
+    if (message.includes('email not confirmed')) {
+      return `Your admin account exists but is not confirmed in Supabase Auth. Confirm ${ADMIN_EMAIL} and try again.`;
+    }
+    if (message.includes('invalid login credentials')) {
+      return `Check that ${ADMIN_EMAIL} exists in Supabase Auth and that the password is correct.`;
+    }
+    if (message.includes('user not found') || message.includes('does not exist')) {
+      return `Create ${ADMIN_EMAIL} in Supabase Auth first, then confirm the email address.`;
+    }
+    return errorMessage || 'Please sign in with a confirmed Supabase Auth admin account.';
+  }
+
   /** Clear any visible login error. */
   function clearLoginError () {
     const errEl = document.getElementById('login-error');
@@ -111,7 +126,15 @@
     });
 
     if (error) {
-      showLoginError(error.message || 'Invalid credentials. Please try again.');
+      showLoginError(buildAdminAuthHint(error.message));
+      btn.innerHTML = originalHTML;
+      btn.disabled  = false;
+      return;
+    }
+
+    const { data: userData, error: userErr } = await window.supabase.auth.getUser();
+    if (userErr || !userData?.user) {
+      showLoginError('Admin login did not create a valid authenticated session. Check that the user is confirmed in Supabase Auth.');
       btn.innerHTML = originalHTML;
       btn.disabled  = false;
       return;
@@ -124,7 +147,7 @@
       window.showToast('Welcome back!', 'success');
     }
 
-    applySession(data.user);
+    applySession(userData.user);
   }
 
 
@@ -142,12 +165,18 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
 
-    /* 1 ── Check for an existing session (Bypassed for local inspection) ── */
-    const mockUser = {
-      email: 'admin@artwallstudio.com',
-      user_metadata: { full_name: 'Admin Manager' }
-    };
-    applySession(mockUser);
+    /* 1 ── Check for an existing Supabase session ── */
+    try {
+      const { data: { session } } = await window.supabase.auth.getSession();
+      if (session?.user) {
+        applySession(session.user);
+      } else {
+        showLoginOverlay();
+      }
+    } catch (err) {
+      console.warn('[auth] session bootstrap failed', err);
+      showLoginOverlay();
+    }
 
 
     /* 2 ── Login button click ───────────────────────────────────── */
