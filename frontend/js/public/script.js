@@ -443,7 +443,65 @@ function initRatingModal() {
   }
 }
 
+function initContactForm() {
+  const contactForm = document.getElementById('contact-section-form');
+  if (!contactForm) return;
+
+  contactForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const submitBtn = document.getElementById('btn-contact-submit');
+    const originalText = submitBtn ? submitBtn.textContent : 'Send Message';
+    const payload = {
+      firstName: document.getElementById('contact-first-name')?.value.trim() || '',
+      lastName: document.getElementById('contact-last-name')?.value.trim() || '',
+      email: document.getElementById('contact-email')?.value.trim() || '',
+      phone: document.getElementById('contact-phone')?.value.trim() || '',
+      projectType: document.getElementById('contact-project-type')?.value || '',
+      message: document.getElementById('contact-message')?.value.trim() || ''
+    };
+
+    if (!payload.firstName || !payload.lastName || !payload.email) {
+      alert('Please complete your name and email before sending.');
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+    }
+
+    try {
+      const apiUrl = window.CONTACT_API_URL || 'http://localhost:8080/api/contact';
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.success === false) {
+        throw new Error(result.message || 'Failed to send your message.');
+      }
+
+      alert('Thank you! Your details have been sent.');
+      contactForm.reset();
+    } catch (err) {
+      console.error('[contact-form] submit error:', err);
+      alert(err.message || 'Failed to send your message. Please try again.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initContactForm();
   initRatingModal();
   observeGalleryGrid();
   initRealtimeGallery();
