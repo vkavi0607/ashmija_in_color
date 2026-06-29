@@ -90,6 +90,10 @@ const CREATIONS_SHOWCASE = [
     accent: '#c89a4b',
     stats: ['Hospitality', '6 images', 'Warm mood'],
     images: [
+      'assets/images/creations/cafe-henna-hand-chai.jpg',
+      'assets/images/creations/cafe-chai-illamal.jpg',
+      'assets/images/creations/cafe-old-school-van-1.jpg',
+      'assets/images/creations/cafe-old-school-van-2.jpg',
       'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=900&h=900&q=80',
@@ -107,6 +111,14 @@ const CREATIONS_SHOWCASE = [
     accent: '#8c9c88',
     stats: ['Residential', '6 images', 'Soft tones'],
     images: [
+      'assets/images/creations/residency-banana-leaf-1.jpg',
+      'assets/images/creations/residency-krishna-hill.jpg',
+      'assets/images/creations/residency-peacock-entrance.jpg',
+      'assets/images/creations/residency-anklets-lamp.jpg',
+      'assets/images/creations/residency-kolam-doorstep.jpg',
+      'assets/images/creations/residency-krishna-with-viewer.jpg',
+      'assets/images/creations/residency-peacock-anklets-lamp.jpg',
+      'assets/images/creations/residency-peacock-kalash-doorway.jpg',
       'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&h=900&q=80',
@@ -124,6 +136,8 @@ const CREATIONS_SHOWCASE = [
     accent: '#a76f4d',
     stats: ['Dining', '6 images', 'Rich contrast'],
     images: [
+      'assets/images/creations/restaurant-floral-poppy.jpg',
+      'assets/images/creations/restaurant-abstract-botanical.jpg',
       'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=900&h=900&q=80',
@@ -139,15 +153,16 @@ const CREATIONS_SHOWCASE = [
     headline: 'Playschool spaces',
     description: 'Playful, colorful learning environments that feel safe, creative, and joyful for children.',
     accent: '#7f9fd2',
-    stats: ['Education', '6 images', 'Playful color'],
+    stats: ['Education', '8 images', 'Playful color'],
     images: [
-      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&h=900&q=80',
-      'https://images.unsplash.com/photo-1600195077071-7f4f3a1f0a02?auto=format&fit=crop&w=900&h=900&q=80',
-      'https://images.unsplash.com/photo-1523287562758-66c7fc58967d?auto=format&fit=crop&w=900&h=900&q=80',
+      'assets/images/creations/restaurant-floral-poppy.jpg',
+      'assets/images/creations/residency-peacock-entrance.jpg',
+      'assets/images/creations/residency-kolam-doorstep.jpg',
       'https://images.unsplash.com/photo-1455763916899-e8b50eca9967?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=900&h=900&q=80',
-      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&h=900&q=80',
       'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=900&h=900&q=80',
     ],
   },
 ];
@@ -230,7 +245,8 @@ function initCreationsShowcase() {
     placeholderEl.textContent = item.label.toUpperCase();
     setHeroImage(item.images[0], `${item.label} hero image`);
 
-    gridEl.innerHTML = item.images.slice(1, 7).map((src, imageIndex) => `
+    const maxThumbnails = item.key === 'playschool' ? 8 : 6;
+    gridEl.innerHTML = item.images.slice(1, maxThumbnails + 1).map((src, imageIndex) => `
       <button type="button" class="creation-photo${imageIndex === 0 ? ' creation-photo-primary' : ''}" data-creation-photo-src="${src}" aria-label="${item.label} image ${imageIndex + 2}">
         <img src="${src}" alt="${item.label} interior ${imageIndex + 2}" loading="lazy">
       </button>
@@ -400,6 +416,68 @@ if (btnCreatorsMore) {
 }
 
 function initRatingModal() {
+  const STATIC_REVIEWS = [
+    {
+      name: 'Kavitha',
+      company: 'Director, Google Chennai',
+      quote: 'ashmija in color transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.',
+      image: 'https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?auto=format&fit=crop&w=900&h=620&q=80',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150',
+      date: 'May 18, 2024',
+      place: 'Chennai',
+    },
+    {
+      name: 'Vikram',
+      company: 'Curator, Taj Group',
+      quote: 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.',
+      image: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=900&h=620&q=80',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150',
+      date: 'April 7, 2024',
+      place: 'Chennai',
+    },
+    {
+      name: 'Ananya',
+      company: 'Architect, Nair Villas',
+      quote: 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.',
+      image: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=900&h=620&q=80',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150',
+      date: 'March 22, 2024',
+      place: 'Bengaluru',
+    },
+  ];
+
+  function renderStaticReviewsList() {
+    const allReviewsList = document.getElementById('all-reviews-list');
+    if (!allReviewsList) return;
+
+    allReviewsList.innerHTML = STATIC_REVIEWS.map((review) => `
+      <article class="testimonial-card glass-card" style="margin-bottom:1rem;">
+        <div class="testimonial-work-img">
+          <img src="${review.image}" alt="${review.name} project work">
+        </div>
+        <div class="testimonial-content">
+          <div class="testimonial-avatar">
+            <img src="${review.avatar}" alt="${review.name}">
+          </div>
+          <h4 class="testimonial-name">${review.name}</h4>
+          <span class="testimonial-company">${review.company}</span>
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+          </div>
+          <p class="testimonial-quote">${review.quote}</p>
+          <time class="testimonial-date">${review.date}</time>
+          <div class="creator-stats-wrap" style="margin-top:.8rem;">
+            <span class="creator-stat-badge">${review.place}</span>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  }
+
   const rateUsBtn = document.getElementById('rate-us-btn');
   const ratingModal = document.getElementById('rating-modal');
   const reviewForm = document.getElementById('review-form');
@@ -422,9 +500,7 @@ function initRatingModal() {
       allReviewsModal.classList.add('active');
       modalBackdrop.classList.add('active');
       document.body.style.overflow = 'hidden';
-      if (typeof window.renderAllReviewsToModal === 'function') {
-        await window.renderAllReviewsToModal();
-      }
+      renderStaticReviewsList();
     });
   }
 
@@ -509,12 +585,13 @@ function initRatingModal() {
       const formData = new FormData(reviewForm);
       const name = formData.get('reviewerName').trim();
       const company = formData.get('reviewerCompany').trim();
-      const location = formData.get('reviewerLocation').trim();
+      const locationField = formData.get('reviewerLocation');
+      const location = typeof locationField === 'string' ? locationField.trim() : '';
       const rating = formData.get('reviewRating');
       const reviewText = formData.get('reviewText').trim();
 
-      if (!name || !company || !location || !reviewText) {
-        alert('Please complete all fields before submitting your review.');
+      if (!name || !company || !reviewText) {
+        alert('Please complete the required fields before submitting your review.');
         return;
       }
 
@@ -526,36 +603,37 @@ function initRatingModal() {
       }
 
       try {
-        if (!window.supabase) {
-          throw new Error('Supabase client is not available.');
+        const reviewTextSummary = buildReviewTextPayload(reviewText, location, '');
+        renderStaticReviewsList?.();
+        const allReviewsList = document.getElementById('all-reviews-list');
+        if (allReviewsList) {
+          const card = document.createElement('article');
+          card.className = 'testimonial-card glass-card';
+          card.style.marginBottom = '1rem';
+          card.innerHTML = `
+            <div class="testimonial-content" style="padding-top:0;">
+              <span class="creator-role-badge">Thanks for sharing</span>
+              <h4 class="testimonial-name">${name}</h4>
+              <span class="testimonial-company">${company}</span>
+              <div class="testimonial-stars" aria-label="${rating} out of 5 stars">
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+              </div>
+              <p class="testimonial-quote">${reviewTextSummary}</p>
+            </div>
+          `;
+          allReviewsList.prepend(card);
         }
 
-        let workImage = '';
-        const workImageFile = document.getElementById('review-work-image')?.files[0];
-        if (workImageFile) {
-          try {
-            workImage = await compressImage(workImageFile);
-          } catch (compressErr) {
-            console.warn('[review-form] image compression failed, proceeding without it:', compressErr);
-          }
-        }
-
-        const payload = {
-          name,
-          company,
-          rating: parseInt(rating, 10),
-          review_text: buildReviewTextPayload(reviewText, location, workImage)
-        };
-
-        const { error } = await window.supabase.from('reviews').insert(payload);
-        if (error) throw error;
-
-        alert('Thank you! Your review has been submitted for approval.');
+        alert('Thanks! This static version does not store reviews, but your feedback can still be shared with the team.');
         reviewForm.reset();
         closeAllModals();
       } catch (err) {
         console.error('[review-form] submit error:', err);
-        alert(err?.message ? `Failed to submit review: ${err.message}` : 'Failed to submit review. Please try again.');
+        alert(err?.message ? `Could not process the review form: ${err.message}` : 'Could not process the review form.');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -740,37 +818,8 @@ window.startLivingGallery = function () {
  * Dynamic updates subscription for uploads, edits, and deletions.
  */
 window.initRealtimeGallery = function () {
-  if (!window.supabase) {
-    console.warn('[realtime] Supabase not available, skipping realtime database sync.');
-    return;
-  }
-
-  console.log('[realtime] Subscribing to real-time ashmija in color exhibitions...');
-
-  // 1. Subscribe to portfolio table updates only when the legacy gallery exists.
-  const legacyGallery = document.querySelector('.gallery-grid');
-  if (legacyGallery) {
-    window.supabase
-      .channel('public:portfolio-main-site')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'portfolio' }, async (payload) => {
-        console.log('[realtime] Real-time portfolio update received:', payload);
-        if (typeof window.renderPortfolioToMainSite === 'function') {
-          await window.renderPortfolioToMainSite();
-        }
-      })
-      .subscribe();
-  }
-
-  // 2. Subscribe to artists table updates
-  window.supabase
-    .channel('public:artists-main-site')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'artists' }, async (payload) => {
-      console.log('[realtime] Real-time artists update received:', payload);
-      if (typeof window.renderArtistsToMainSite === 'function') {
-        await window.renderArtistsToMainSite();
-      }
-    })
-    .subscribe();
+  // Static site version does not subscribe to backend updates.
+  return;
 };
 
 

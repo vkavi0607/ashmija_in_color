@@ -241,16 +241,13 @@ INSERT INTO portfolio (title, artist_name, client, location, area, art_type, yea
 SELECT 'Urban Grid', 'Arun K.', 'WeWork — Bangalore Hub', 'Bangalore, Karnataka', '850 sq. ft.', 'Geometric Street Art', 2024, 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=600&h=400&q=80', 1, false, false
 WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Urban Grid');
 
-INSERT INTO portfolio (title, artist_name, client, location, area, art_type, year, image_url, display_order, is_featured, is_hidden)
-SELECT 'Ocean Memory', 'Meera S.', 'Taj Fisherman''s Cove', 'Kovalam, Chennai', '1,200 sq. ft.', 'Abstract Fluid Art', 2023, 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=600&h=400&q=80', 2, false, false
-WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Ocean Memory');
 
 INSERT INTO portfolio (title, artist_name, client, location, area, art_type, year, image_url, display_order, is_featured, is_hidden)
-SELECT 'Golden Axis', 'Ravi S.', 'ITC Grand Chola', 'Guindy, Chennai', '680 sq. ft.', 'Gold Leaf Abstract', 2024, 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80', 3, false, false
+SELECT 'Golden Axis', 'Ravi S.', 'ITC Grand Chola', 'Guindy, Chennai', '680 sq. ft.', 'Gold Leaf Abstract', 2024, 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80', 2, false, false
 WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Golden Axis');
 
 INSERT INTO portfolio (title, artist_name, client, location, area, art_type, year, image_url, display_order, is_featured, is_hidden)
-SELECT 'Nebula', 'Divya M.', 'Zoho Corporation', 'Tenkasi, Tamil Nadu', '1,500 sq. ft.', 'Cosmic Mural · Spray Art', 2024, 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80', 4, false, false
+SELECT 'Nebula', 'Divya M.', 'Zoho Corporation', 'Tenkasi, Tamil Nadu', '1,500 sq. ft.', 'Cosmic Mural · Spray Art', 2024, 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80', 3, false, false
 WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Nebula');
 
 
@@ -264,10 +261,6 @@ WHERE NOT EXISTS (SELECT 1 FROM artists WHERE name = 'Vikram');
 INSERT INTO artists (name, role, bio, quote, image_url, stats, is_available, display_order)
 SELECT 'Ashmija', 'Lead Artist, Muralist', 'Merging intricate botanical illustrations with architectural backdrops, Ashmija''s nature-inspired murals and large-scale floral art pieces bring organic life and a sense of calm to high-end interiors across South Asia.', 'My work bridges the gap between concrete rooms and the wild serenity of nature. I paint to give blank walls a voice and spaces a heartbeat.', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400&h=500', '✦ 120+ Murals,✦ National Art Award', true, 1
 WHERE NOT EXISTS (SELECT 1 FROM artists WHERE name = 'Ashmija');
-
-INSERT INTO artists (name, role, bio, quote, image_url, stats, is_available, display_order)
-SELECT 'Meera S.', 'Fine Art & Botanical Specialist', 'With a background in classical fine art, Meera translates traditional oil and watercolor textures onto large indoor surfaces. Her work features detailed foliage patterns, soft color palettes, and elegant spatial harmonies.', 'A mural is a dialogue with the room''s geometry. Every stroke is designed to harmonize with the light and air of the space.', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=500', '✦ 90+ Paintings,✦ Gold Medalist in Fine Arts', true, 2
-WHERE NOT EXISTS (SELECT 1 FROM artists WHERE name = 'Meera S.');
 
 
 -- ============================================================
@@ -308,7 +301,7 @@ WHERE NOT EXISTS (SELECT 1 FROM faqs WHERE question = 'What paints and materials
 UPDATE auth.users
 SET email_confirmed_at = NOW(),
     confirmed_at = NOW()
-WHERE email = 'admin@artwallstudio.com';
+WHERE email = 'admin@ashmijaincolor.com';
 
 
 -- ============================================================

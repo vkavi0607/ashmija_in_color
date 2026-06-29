@@ -4,7 +4,6 @@
   const CONTACT_FORM_ID = 'contact-section-form';
   const CONTACT_BUTTON_ID = 'btn-contact-submit';
   const STATUS_MESSAGE_ID = 'contact-status-message';
-  const INQUIRIES_TABLE = 'inquiries';
 
   function createStatusNode() {
     const status = document.createElement('div');
@@ -72,32 +71,24 @@
     toggleSubmitButton(true);
 
     try {
-      if (!window.supabase) {
-        throw new Error('Supabase client is not available.');
-      }
+      const subject = encodeURIComponent(`Website enquiry from ${firstName} ${lastName}`);
+      const body = encodeURIComponent([
+        `Name: ${firstName} ${lastName}`,
+        `Email: ${email}`,
+        phone ? `Phone: ${phone}` : '',
+        projectType ? `Project type: ${projectType}` : '',
+        '',
+        message,
+      ].filter(Boolean).join('\n'));
 
-      const name = [firstName, lastName].filter(Boolean).join(' ') || null;
-      const payload = {
-        name,
-        email: email || null,
-        phone: phone || null,
-        message: [
-          projectType ? `Project type: ${projectType}` : '',
-          message,
-        ].filter(Boolean).join('\n\n') || null,
-        status: 'new',
-        created_at: new Date().toISOString(),
-      };
-
-      const { error } = await window.supabase.from(INQUIRIES_TABLE).insert(payload);
-      if (error) throw error;
-
-      setStatusMessage("Thank you! We'll get back to you soon.", 'success');
+      setStatusMessage('Opening your email app so you can send the message directly.', 'success');
+      const mailtoUrl = `mailto:ashmijaincolor@gmail.com?subject=${subject}&body=${body}`;
+      window.location.href = mailtoUrl;
       const form = document.getElementById(CONTACT_FORM_ID);
       if (form) form.reset();
     } catch (err) {
-      console.warn('[data-loader] inquiry submit failed', err);
-      setStatusMessage('Something went wrong. Please try again.', 'error');
+      console.warn('[data-loader] static contact handoff failed', err);
+      setStatusMessage('Please use the email link below to contact us directly.', 'error');
     } finally {
       toggleSubmitButton(false);
     }
@@ -141,21 +132,25 @@
   }
 
   async function loadAllSections() {
-    if (typeof window.renderConfigToMainSite !== 'function' ||
-        typeof window.renderPortfolioToMainSite !== 'function' ||
-        typeof window.renderArtistsToMainSite !== 'function' ||
-        typeof window.renderReviewsToMainSite !== 'function' ||
-        typeof window.renderFAQsToMainSite !== 'function') {
-      console.warn('[data-loader] One or more render functions are not available yet.');
+    const optionalRenderers = [
+      { name: 'renderPortfolioToMainSite', fn: window.renderPortfolioToMainSite },
+      { name: 'renderArtistsToMainSite', fn: window.renderArtistsToMainSite },
+      { name: 'renderConfigToMainSite', fn: window.renderConfigToMainSite },
+      { name: 'renderFAQsToMainSite', fn: window.renderFAQsToMainSite },
+    ];
+
+    const availableRenders = optionalRenderers.filter((entry) => typeof entry.fn === 'function');
+    if (availableRenders.length === 0) {
+      return Promise.resolve();
     }
 
-    await Promise.all([
-      window.renderConfigToMainSite?.(),
-      window.renderPortfolioToMainSite?.(),
-      window.renderArtistsToMainSite?.(),
-      window.renderReviewsToMainSite?.(),
-      window.renderFAQsToMainSite?.(),
-    ]);
+    await Promise.all(availableRenders.map(async (entry) => {
+      try {
+        await entry.fn();
+      } catch (err) {
+        console.warn(`[data-loader] ${entry.name} failed`, err);
+      }
+    }));
   }
 
   window.loadAllSections = loadAllSections;

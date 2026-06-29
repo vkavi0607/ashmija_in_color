@@ -36,6 +36,7 @@
   const BUCKET      = 'artwall-media';
   const STORAGE_DIR = 'artists/';
   const TABLE       = 'artists';
+  let _schemaWarningShown = false;
 
   function getPublicArtistAsset(fileName) {
     const inAdminPage = /(^|\/)admin(\/|$)/.test(window.location.pathname || '');
@@ -48,6 +49,52 @@
     if (normalized === 'ashmija') return getPublicArtistAsset('ashmija-profile.jpg');
     return fallbackUrl || '';
   }
+
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
+  }
+
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+  }
+
+  function getFallbackArtists() {
+    return [
+      {
+        id: 'fallback-vikram',
+        name: 'Vikram',
+        role: 'Lead Artist, Urban & Abstract',
+        bio: 'Specializing in geometric abstraction and large-scale urban realism, Vikram has spent the last 12 years collaborating with corporate campuses, hospitality interiors, and public districts to transform blank walls into local landmarks.',
+        quote: 'Art should not be confined behind closed doors. Corporate corridors and public walls are the spaces where street realism and daily life truly merge.',
+        image_url: getPublicArtistAsset('vikram-profile.jpg'),
+        stats: 'Featured in Elle Decor,80+ Projects',
+        fb_url: '#',
+        tw_url: '#',
+        ln_url: '#',
+        is_available: true,
+        display_order: 0,
+      },
+      {
+        id: 'fallback-ashmija',
+        name: 'Ashmija',
+        role: 'Lead Artist, Muralist',
+        bio: 'Merging intricate botanical illustrations with architectural backdrops, Ashmija\'s nature-inspired murals and large-scale floral art pieces bring organic life and a sense of calm to high-end interiors across South Asia.',
+        quote: 'My work bridges the gap between concrete rooms and the wild serenity of nature. I paint to give blank walls a voice and spaces a heartbeat.',
+        image_url: getPublicArtistAsset('ashmija-profile.jpg'),
+        stats: '120+ Murals,National Art Award',
+        fb_url: '#',
+        tw_url: '#',
+        ln_url: '#',
+        is_available: true,
+        display_order: 1,
+      },
+    ];
+  }
+
+  window.getFallbackArtistsItems = getFallbackArtists;
 
   /** Module-level state — reset each time initArtists() is called. */
   let _items       = [];     // current fetched artist rows
@@ -439,6 +486,10 @@
 
   async function fetchArtists() {
     try {
+      if (shouldBypassRemoteData()) {
+        return getFallbackArtists();
+      }
+
       const { data, error } = await window.supabase
         .from(TABLE)
         .select('*')
@@ -449,7 +500,17 @@
       return data || [];
     } catch (err) {
       console.error('[artists] fetch error:', err);
-      window.showToast('Failed to load artists: ' + (err.message || 'Unknown error'), 'error');
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown && typeof window.showToast === 'function') {
+          window.showToast('Artists table is missing in Supabase. Showing local fallback data until the schema is applied.', 'warning');
+          _schemaWarningShown = true;
+        }
+        return getFallbackArtists();
+      }
+
+      if (typeof window.showToast === 'function') {
+        window.showToast('Failed to load artists: ' + (err.message || 'Unknown error'), 'error');
+      }
       return [];
     }
   }
@@ -1101,39 +1162,58 @@
         Loading artists…
       </div>`;
 
+    let artists = [];
+
     try {
-      const { data, error } = await window.supabase
-        .from(TABLE)
-        .select('*')
-        .order('display_order', { ascending: true })
-        .order('created_at',    { ascending: true });
+      if (shouldBypassRemoteData()) {
+        artists = getFallbackArtists();
+      } else {
+        const { data, error } = await window.supabase
+          .from(TABLE)
+          .select('*')
+          .order('display_order', { ascending: true })
+          .order('created_at',    { ascending: true });
 
-      if (error) throw error;
-
-      const artists = data || [];
-
-      if (artists.length === 0) {
-        creatorsGrid.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:80px 0;
-                      color:var(--muted,#7a7268);">
-            <p style="font-size:1rem;">No artists to display yet.</p>
-          </div>`;
+        if (error) throw error;
+        artists = data || [];
+      }
+    } catch (err) {
+      if (!isMissingTableError(err)) {
+        console.error('[artists] renderArtistsToMainSite error:', err);
+        creatorsGrid.innerHTML = originalHtml;
         return;
       }
 
-      /* ── Build exact creator-card HTML structure ── */
-      const html = artists.map((artist, index) => {
-        const name    = artist.name    || '';
-        const role    = artist.role    || '';
-        const bio     = artist.bio     || '';
-        const quote   = artist.quote   || '';
-        const imgUrl  = resolveFeaturedArtistImage(artist.name, artist.image_url || '');
-        const stats   = artist.stats   || '';
-        const fbUrl   = artist.fb_url  || '#';
-        const twUrl   = artist.tw_url  || '#';
-        const lnUrl   = artist.ln_url  || '#';
+      if (!_schemaWarningShown && typeof window.showToast === 'function') {
+        window.showToast('Artists table is missing in Supabase. Showing local fallback artists until the schema is applied.', 'warning');
+        _schemaWarningShown = true;
+      }
 
-        return `<div class="creator-card glass-card reveal"
+      artists = getFallbackArtists();
+    }
+
+    if (artists.length === 0) {
+      creatorsGrid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:80px 0;
+                    color:var(--muted,#7a7268);">
+          <p style="font-size:1rem;">No artists to display yet.</p>
+        </div>`;
+      return;
+    }
+
+    /* ── Build exact creator-card HTML structure ── */
+    const html = artists.map((artist, index) => {
+      const name    = artist.name    || '';
+      const role    = artist.role    || '';
+      const bio     = artist.bio     || '';
+      const quote   = artist.quote   || '';
+      const imgUrl  = resolveFeaturedArtistImage(artist.name, artist.image_url || '');
+      const stats   = artist.stats   || '';
+      const fbUrl   = artist.fb_url  || '#';
+      const twUrl   = artist.tw_url  || '#';
+      const lnUrl   = artist.ln_url  || '#';
+
+      return `<div class="creator-card glass-card reveal"
      style="transition-delay: ${index * 0.12}s"
      data-name="${escHtml(name)}"
      data-role="${escHtml(role)}"
@@ -1165,90 +1245,85 @@
     </div>
   </div>
 </div>`;
-      }).join('\n');
+    }).join('\n');
 
-      creatorsGrid.innerHTML = html;
+    creatorsGrid.innerHTML = html;
 
-      /* ── Re-attach creator-card click handlers (mirrors script.js) ── */
-      creatorsGrid.querySelectorAll('.creator-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const name   = card.getAttribute('data-name');
-          const role   = card.getAttribute('data-role');
-          const bio    = card.getAttribute('data-bio');
-          const quote  = card.getAttribute('data-quote');
-          const image  = card.getAttribute('data-image');
-          const statsAttr = card.getAttribute('data-stats') || '';
+    /* ── Re-attach creator-card click handlers (mirrors script.js) ── */
+    creatorsGrid.querySelectorAll('.creator-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const name   = card.getAttribute('data-name');
+        const role   = card.getAttribute('data-role');
+        const bio    = card.getAttribute('data-bio');
+        const quote  = card.getAttribute('data-quote');
+        const image  = card.getAttribute('data-image');
+        const statsAttr = card.getAttribute('data-stats') || '';
 
-          const modalImg   = document.getElementById('modal-img');
-          const modalName  = document.getElementById('modal-name');
-          const modalRole  = document.getElementById('modal-role');
-          const modalBio   = document.getElementById('modal-bio');
-          const modalQuote = document.getElementById('modal-quote');
-          const modalStats = document.getElementById('modal-stats');
+        const modalImg   = document.getElementById('modal-img');
+        const modalName  = document.getElementById('modal-name');
+        const modalRole  = document.getElementById('modal-role');
+        const modalBio   = document.getElementById('modal-bio');
+        const modalQuote = document.getElementById('modal-quote');
+        const modalStats = document.getElementById('modal-stats');
 
-          if (modalImg)  { modalImg.src = image; modalImg.alt = name; }
-          if (modalName) modalName.textContent = name;
-          if (modalRole) modalRole.textContent = role;
-          if (modalBio)  modalBio.textContent  = bio;
+        if (modalImg)  { modalImg.src = image; modalImg.alt = name; }
+        if (modalName) modalName.textContent = name;
+        if (modalRole) modalRole.textContent = role;
+        if (modalBio)  modalBio.textContent  = bio;
 
-          if (modalQuote) {
-            if (quote) {
-              modalQuote.textContent   = `"${quote}"`;
-              modalQuote.style.display = 'block';
-            } else {
-              modalQuote.style.display = 'none';
-            }
+        if (modalQuote) {
+          if (quote) {
+            modalQuote.textContent   = `"${quote}"`;
+            modalQuote.style.display = 'block';
+          } else {
+            modalQuote.style.display = 'none';
           }
+        }
 
-          if (modalStats) {
-            modalStats.innerHTML = '';
-            if (statsAttr) {
-              statsAttr.split(',').forEach(stat => {
-                const badge = document.createElement('span');
-                badge.className   = 'creator-stat-badge';
-                badge.textContent = stat.trim();
-                modalStats.appendChild(badge);
-              });
-            }
+        if (modalStats) {
+          modalStats.innerHTML = '';
+          if (statsAttr) {
+            statsAttr.split(',').forEach(stat => {
+              const badge = document.createElement('span');
+              badge.className   = 'creator-stat-badge';
+              badge.textContent = stat.trim();
+              modalStats.appendChild(badge);
+            });
           }
+        }
 
-          // Open the main site's creator profile modal
-          const creatorModal  = document.getElementById('creator-modal');
-          const modalBackdrop = document.getElementById('modal-backdrop');
-          if (creatorModal && modalBackdrop) {
-            creatorModal.classList.add('active');
-            modalBackdrop.classList.add('active');
-            document.body.style.overflow = 'hidden';
-          }
-        });
+        // Open the main site's creator profile modal
+        const creatorModal  = document.getElementById('creator-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        if (creatorModal && modalBackdrop) {
+          creatorModal.classList.add('active');
+          modalBackdrop.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
       });
+    });
 
-      /* ── Re-observe new cards with revealObserver for entrance animation ── */
-      if (typeof window.revealObserver !== 'undefined' && window.revealObserver) {
-        creatorsGrid.querySelectorAll('.reveal').forEach(el => {
-          el.classList.remove('in'); // reset so it can re-trigger
-          window.revealObserver.observe(el);
+    /* ── Re-observe new cards with revealObserver for entrance animation ── */
+    if (typeof window.revealObserver !== 'undefined' && window.revealObserver) {
+      creatorsGrid.querySelectorAll('.reveal').forEach(el => {
+        el.classList.remove('in'); // reset so it can re-trigger
+        window.revealObserver.observe(el);
+      });
+    } else {
+      // Fallback: use our own IntersectionObserver if revealObserver isn't exposed
+      const fallbackObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            obs.unobserve(entry.target);
+          }
         });
-      } else {
-        // Fallback: use our own IntersectionObserver if revealObserver isn't exposed
-        const fallbackObserver = new IntersectionObserver((entries, obs) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('in');
-              obs.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.12 });
+      }, { threshold: 0.12 });
 
-        creatorsGrid.querySelectorAll('.reveal').forEach(el => {
-          el.classList.remove('in');
-          fallbackObserver.observe(el);
-        });
-      }
-
-    } catch (err) {
-      console.error('[artists] renderArtistsToMainSite error:', err);
-      creatorsGrid.innerHTML = originalHtml;
+      creatorsGrid.querySelectorAll('.reveal').forEach(el => {
+        el.classList.remove('in');
+        fallbackObserver.observe(el);
+      });
     }
   };
 

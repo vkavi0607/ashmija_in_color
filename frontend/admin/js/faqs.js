@@ -8,6 +8,7 @@
   let _sortable = null;
   let _quill = null;
   let _editingId = null;
+  let _schemaWarningShown = false;
 
   function getDb() {
     return window.supabase || null;
@@ -61,6 +62,17 @@
     return 'Yes';
   }
 
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
+  }
+
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+  }
+
   function buildFaqRow(faq) {
     const question = escapeHtml(faq.question || 'Untitled question');
     const category = getCategoryLabel(faq);
@@ -111,6 +123,7 @@
   async function fetchFaqs() {
     const db = getDb();
     if (!db) throw new Error('Supabase client not available');
+    if (shouldBypassRemoteData()) return [];
 
     const { data, error } = await db.from(TABLE_NAME)
       .select('*')
@@ -310,6 +323,16 @@
       renderFaqTable();
       initSortable();
     } catch (err) {
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown) {
+          showToastSafe('warning', 'FAQ table is missing in Supabase. Showing an empty FAQ list until the schema is applied.');
+          _schemaWarningShown = true;
+        }
+        _faqs = [];
+        renderFaqTable();
+        return;
+      }
+
       console.error('[faq] load error', err);
       showToastSafe('error', 'Unable to load FAQ items.');
     }
@@ -386,12 +409,19 @@
         return;
       }
 
+      if (shouldBypassRemoteData()) {
+        if (section && originalHtml !== null) section.innerHTML = originalHtml;
+        return;
+      }
+
       const { data, error } = await db.from(TABLE_NAME)
         .select('id, question, answer')
         .order('display_order', { ascending: true });
 
       if (error) {
-        console.warn('[renderFAQsToMainSite] Fetch error:', error.message);
+        if (!isMissingTableError(error)) {
+          console.warn('[renderFAQsToMainSite] Fetch error:', error.message);
+        }
         if (section && originalHtml !== null) section.innerHTML = originalHtml;
         return;
       }

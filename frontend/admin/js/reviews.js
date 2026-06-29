@@ -7,6 +7,7 @@
   let _reviews = [];
   let _searchTimer = null;
   let _editingId = null;
+  let _schemaWarningShown = false;
 
   function getDb() {
     return window.supabase || null;
@@ -56,6 +57,17 @@
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '-';
     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
+  }
+
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
   }
 
   function extractWorkImage(reviewText) {
@@ -183,6 +195,7 @@
   async function fetchReviews() {
     const db = getDb();
     if (!db) throw new Error('Supabase client not available');
+    if (shouldBypassRemoteData()) return [];
 
     const { data, error } = await db.from(TABLE_NAME)
       .select('*')
@@ -404,6 +417,16 @@
       _reviews = await fetchReviews();
       renderReviewTable(_reviews);
     } catch (err) {
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown) {
+          showToastSafe('warning', 'Reviews table is missing in Supabase. Showing an empty list until the schema is applied.');
+          _schemaWarningShown = true;
+        }
+        _reviews = [];
+        renderReviewTable(_reviews);
+        return;
+      }
+
       console.error('[reviews] load error', err);
       showToastSafe('error', 'Unable to load reviews.');
     }

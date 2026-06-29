@@ -19,6 +19,7 @@
   };
 
   let _hasUnsavedChanges = false;
+  let _schemaWarningShown = false;
 
   function getDb() {
     return window.supabase || null;
@@ -76,11 +77,31 @@
     }, {});
   }
 
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
+  }
+
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+  }
+
   async function loadConfig() {
     const section = getElement(SECTION_ID);
     if (!section) return;
 
     try {
+      if (shouldBypassRemoteData()) {
+        Object.values(FIELD_MAP).forEach((id) => {
+          const input = getElement(id);
+          if (input) input.value = '';
+        });
+        setUnsavedChanges(false);
+        return;
+      }
+
       const db = getDb();
       if (!db) {
         console.warn('[config] Supabase client not available');
@@ -102,6 +123,19 @@
 
       setUnsavedChanges(false);
     } catch (err) {
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown) {
+          showToastSafe('warning', 'Site config table is missing in Supabase. Using blank defaults until the schema is applied.');
+          _schemaWarningShown = true;
+        }
+        Object.values(FIELD_MAP).forEach((id) => {
+          const input = getElement(id);
+          if (input) input.value = '';
+        });
+        setUnsavedChanges(false);
+        return;
+      }
+
       console.error('[config] load error', err);
       showToastSafe('error', 'Unable to load site configuration.');
     }
@@ -141,7 +175,17 @@
     const previewButton = getElement(PREVIEW_BUTTON_ID);
     if (!previewButton) return;
     previewButton.addEventListener('click', () => {
-      window.open('../../index.html', '_blank');
+      const isFileProtocol = window.location.protocol === 'file:';
+      if (isFileProtocol) {
+        showToastSafe(
+          'warning',
+          'Open the site through a local web server to preview it from the admin console. File-based previews are blocked by the browser.'
+        );
+        return;
+      }
+
+      const previewUrl = new URL('../../index.html', window.location.href);
+      window.open(previewUrl.href, '_blank', 'noopener,noreferrer');
     });
   }
 
@@ -187,9 +231,17 @@
         return;
       }
 
+      if (shouldBypassRemoteData()) {
+        updateTextContent('.hero-title', '');
+        updateTextContent('.hero-sub', '');
+        return;
+      }
+
       const { data, error } = await db.from(TABLE_NAME).select('key,value');
       if (error) {
-        console.warn('[renderConfigToMainSite] Fetch error:', error.message);
+        if (!isMissingTableError(error)) {
+          console.warn('[renderConfigToMainSite] Fetch error:', error.message);
+        }
         return;
       }
 

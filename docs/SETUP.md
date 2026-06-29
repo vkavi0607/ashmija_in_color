@@ -45,9 +45,11 @@ In Supabase Dashboard:
 4. Confirm email (or enable email confirmation bypass for development)
 
 Use this exact admin account for the dashboard:
-- Email: `admin@artwallstudio.com`
+- Email: `admin@ashmijaincolor.com`
+- Password: `parrot`
 - Confirm the user after creating it, or use the SQL setup script below which marks that email as confirmed for development
 - If login fails with RLS errors, the account is usually missing, unconfirmed, or signed in with the wrong project
+- Do not use a simplified one-off SQL block with different column names; the app expects the schema in `database/schema/artwall_supabase_setup.sql`
 
 ### 5. Upload Assets
 
@@ -138,10 +140,11 @@ cat database/schema/artwall_supabase_setup.sql | xclip   # Linux
 
 ### Authentication Issues
 
-1. Ensure `admin@artwallstudio.com` exists in Supabase Auth
+1. Ensure `admin@ashmijaincolor.com` exists in Supabase Auth
 2. Confirm the email in Supabase, or run the schema script in `database/schema/artwall_supabase_setup.sql` to set `confirmed_at`
 3. Check Row Level Security (RLS) policies in `database/schema/artwall_supabase_setup.sql`
 4. Verify the login is using the same Supabase project URL and anon key as the database you updated
+5. If the dashboard shows blank counts, re-run `database/schema/artwall_supabase_setup.sql` so the seed rows and policies are applied
 
 ### File Upload Issues
 
