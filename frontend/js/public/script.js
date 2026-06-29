@@ -258,6 +258,30 @@ function initRatingModal() {
   const reviewForm = document.getElementById('review-form');
   const testimonialsGrid = document.querySelector('.testimonials-grid');
 
+  function createMLReplyContainer() {
+    let el = document.getElementById('review-ml-reply-card');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'review-ml-reply-card';
+      el.className = 'review-ml-reply-card glass-card';
+      el.hidden = true;
+      const heading = document.createElement('div');
+      heading.className = 'reply-card-heading';
+      heading.textContent = 'AI-generated reply';
+      const body = document.createElement('div');
+      body.className = 'reply-card-body';
+      body.textContent = 'Your custom reply will appear here after review submission.';
+      el.append(heading, body);
+      const target = document.getElementById('testimonials-section');
+      if (target && target.parentNode) {
+        target.parentNode.insertBefore(el, target.nextSibling);
+      } else {
+        document.body.appendChild(el);
+      }
+    }
+    return el;
+  }
+
   function updateAvatarSelection(selectedInput) {
     document.querySelectorAll('.rating-avatar').forEach((label) => {
       label.classList.toggle('selected', label.querySelector('input') === selectedInput);
@@ -364,9 +388,19 @@ function initRatingModal() {
     });
   }
 
-  if (reviewForm && testimonialsGrid) {
+  if (reviewForm) {
+    const mlReplyEl = createMLReplyContainer();
     reviewForm.addEventListener('submit', async (event) => {
       event.preventDefault();
+      console.log('[review-form] submit event fired');
+
+      if (mlReplyEl) {
+        mlReplyEl.hidden = true;
+        const body = mlReplyEl.querySelector('.reply-card-body');
+        if (body) {
+          body.textContent = '';
+        }
+      }
 
       const formData = new FormData(reviewForm);
       const name = formData.get('reviewerName').trim();
@@ -392,6 +426,14 @@ function initRatingModal() {
           throw new Error('Supabase client is not available.');
         }
 
+        if (mlReplyEl) {
+          mlReplyEl.hidden = true;
+          const body = mlReplyEl.querySelector('.reply-card-body');
+          if (body) {
+            body.textContent = '';
+          }
+        }
+
         let workImage = '';
         const workImageFile = document.getElementById('review-work-image')?.files[0];
         if (workImageFile) {
@@ -412,6 +454,56 @@ function initRatingModal() {
           }
         }
 
+        let mlReplyText = null;
+        let mlReplyEmoji = null;
+        let mlReplySticker = null;
+        let mlError = null;
+        try {
+          console.log('[review-form] requesting ML reply', { review: reviewText, customer_name: name });
+          const mlResponse = await fetch('http://127.0.0.1:5000/api/generate-reply', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              review: reviewText,
+              customer_name: name
+            })
+          });
+
+          if (mlResponse.ok) {
+            const mlData = await mlResponse.json();
+            console.log('[review-form] ML API response', mlData);
+            mlReplyText = mlData.reply || null;
+            mlReplyEmoji = mlData.emoji || null;
+            mlReplySticker = mlData.sticker || null;
+          } else {
+            console.warn('[review-form] ML API returned status', mlResponse.status);
+          }
+        } catch (mlErr) {
+          console.warn('[review-form] ML API call failed:', mlErr);
+        }
+
+        // Fallback custom reply when ML API is not available
+        if (!mlReplyText) {
+          const ratingVal = parseInt(rating, 10);
+          const ratingWord = ratingVal === 5 ? 'amazing' : ratingVal === 4 ? 'wonderful' : 'great';
+          const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+          mlReplyText = `Dear ${formattedName},\n\nThank you so much for your ${ratingWord} review! We're truly honored that you took the time to share your experience with ashmija in color.\n\nYour words inspire us to continue creating beautiful, meaningful art that transforms spaces and touches hearts. We look forward to bringing more color and joy to your world!\n\nWith gratitude,\nThe ashmija in color Team`;
+          mlReplyEmoji = '😊';
+          mlReplySticker = '😊 🎨';
+        }
+
+        // For negative replies from ML, ensure it's short and clean
+        if (mlReplyText && mlReplyText.length > 200 && mlReplyText.includes('sincerely apologize')) {
+          const nameMatch = mlReplyText.match(/Dear ([^,]+),/);
+          const topicMatch = mlReplyText.match(/feedback on ([^—]+)/);
+          const customerName = nameMatch ? nameMatch[1] : 'valued customer';
+          const topicText = topicMatch ? topicMatch[1].trim() : 'this area';
+          
+          mlReplyText = `Dear ${customerName},\n\nThank you for your feedback on ${topicText} — we sincerely apologize and are taking immediate action to improve.\n\nWith sincere apologies,\nThe ashmija in color Team`;
+        }
+
         const payload = {
           name,
           company,
@@ -426,10 +518,65 @@ function initRatingModal() {
         const { error } = await window.supabase.from('reviews').insert(payload);
         if (error) throw error;
 
-        alert('Thank you! Your review has been submitted for approval.');
+        const displayText = mlReplyText;
+
+        // Close any open modals (like the rating modal) before showing the reply modal
+        closeAllModals();
+
+        const mlReplyModal = document.getElementById('ml-reply-modal');
+        const mlReplyModalText = document.getElementById('ml-reply-modal-text');
+        const mlReplyModalEmoji = document.getElementById('ml-reply-modal-emoji');
+        if (mlReplyModal && mlReplyModalText) {
+          mlReplyModalText.textContent = displayText;
+          if (mlReplyModalEmoji) {
+            mlReplyModalEmoji.textContent = mlReplyEmoji || '';
+            mlReplyModalEmoji.style.display = mlReplyEmoji ? 'block' : 'none';
+            // Apply consistent animation based on emoji
+            const emojiAnimations = {
+              '😊': 'emojiPopIn',
+              '😁': 'emojiBounce',
+              '😄': 'emojiWiggle',
+              '🤗': 'emojiFloat',
+              '😃': 'emojiSpin',
+              '🥰': 'emojiPopIn',
+              '😍': 'emojiBounce',
+              '🤩': 'emojiWiggle',
+              '😌': 'emojiFloat',
+              '🙂': 'emojiSpin',
+              '😋': 'emojiPopIn',
+              '🤠': 'emojiBounce',
+              '😎': 'emojiWiggle',
+              '🥳': 'emojiFloat',
+              '😇': 'emojiSpin',
+              '☺️': 'emojiPopIn',
+              '😉': 'emojiBounce'
+            };
+            const animName = emojiAnimations[mlReplyEmoji] || 'emojiPopIn';
+            mlReplyModalEmoji.style.animation = `${animName} 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both`;
+            // After entrance animation, add continuous idle animation
+            setTimeout(() => {
+              mlReplyModalEmoji.style.animation = 'emojiIdle 2s ease-in-out infinite';
+            }, 600);
+          }
+          mlReplyModal.classList.add('active');
+          if (modalBackdrop) {
+            modalBackdrop.classList.add('active');
+          }
+          document.body.style.overflow = 'hidden';
+        }
+
+        if (mlReplyEl) {
+          mlReplyEl.hidden = true;
+          const body = mlReplyEl.querySelector('.reply-card-body');
+          if (body) {
+            body.textContent = '';
+          }
+        }
+
+        console.log('[review-form] mlReplyText=', mlReplyText, 'mlError=', mlError);
         reviewForm.reset();
         updateAvatarSelection(document.querySelector('input[name="review-avatar"]'));
-        closeAllModals();
+
       } catch (err) {
         console.error('[review-form] submit error:', err);
         alert('Failed to submit review. Please try again.');
@@ -443,11 +590,31 @@ function initRatingModal() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  initRatingModal();
-  observeGalleryGrid();
-  initRealtimeGallery();
-});
+  // ML Reply Modal close handlers
+  const mlReplyModalClose = document.getElementById('ml-reply-modal-close');
+  const mlReplyModalOkBtn = document.getElementById('ml-reply-modal-ok-btn');
+  if (mlReplyModalClose) {
+    mlReplyModalClose.addEventListener('click', () => {
+      const modal = document.getElementById('ml-reply-modal');
+      if (modal) modal.classList.remove('active');
+      if (modalBackdrop) modalBackdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  }
+  if (mlReplyModalOkBtn) {
+    mlReplyModalOkBtn.addEventListener('click', () => {
+      const modal = document.getElementById('ml-reply-modal');
+      if (modal) modal.classList.remove('active');
+      if (modalBackdrop) modalBackdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initRatingModal();
+    observeGalleryGrid();
+    initRealtimeGallery();
+  });
 
 /* ================================================================
    DYNAMIC RESPONSIVE MASONRY ENGINE
