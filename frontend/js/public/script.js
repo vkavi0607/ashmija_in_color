@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 function updateScrollProgress() {
   const fill = document.querySelector('.scroll-progress-fill');
@@ -27,6 +27,7 @@ const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
       entry.target.classList.add('in');
+      entry.target.classList.remove('pre-animate');
     }
   });
 }, { threshold: 0.1 });
@@ -34,6 +35,8 @@ const revealObserver = new IntersectionObserver((entries) => {
 window.revealObserver = revealObserver;
 
 document.querySelectorAll('.reveal').forEach((el) => {
+  // Only hide-then-animate if JS actually runs; CSS alone always keeps content visible.
+  el.classList.add('pre-animate');
   revealObserver.observe(el);
 });
 
@@ -75,77 +78,231 @@ document.querySelectorAll('.stat-num[data-target]').forEach((el) => {
 });
 
 // =========================================
-// PREMIUM PORTFOLIO GALLERY ANIMATIONS
+// CREATIONS SHOWCASE
 // =========================================
 
-// 1. Staggered reveal on scroll — triggers .animated class
-const galleryGrid = document.querySelector('.gallery-grid');
-if (galleryGrid) {
-  const galleryObserver = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      galleryGrid.classList.add('animated');
-      galleryObserver.disconnect();
-    }
-  }, { threshold: 0.15 });
-  galleryObserver.observe(galleryGrid);
-}
+const CREATIONS_SHOWCASE = [
+  {
+    key: 'cafe',
+    label: 'Cafe',
+    headline: 'Cafe spaces',
+    description: 'Warm lighting, textured finishes, and intimate dining scenes for cafes that feel welcoming from the first glance.',
+    accent: '#c89a4b',
+    stats: ['Hospitality', '6 images', 'Warm mood'],
+    images: [
+      'assets/images/creations/cafe-henna-hand-chai.jpg',
+      'assets/images/creations/cafe-chai-illamal.jpg',
+      'assets/images/creations/cafe-old-school-van-1.jpg',
+      'assets/images/creations/cafe-old-school-van-2.jpg',
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=900&h=900&q=80',
+    ],
+  },
+  {
+    key: 'residency',
+    label: 'Residency',
+    headline: 'Residency spaces',
+    description: 'Calm interiors, layered neutrals, and comfortable living-room compositions for modern residences.',
+    accent: '#8c9c88',
+    stats: ['Residential', '6 images', 'Soft tones'],
+    images: [
+      'assets/images/creations/residency-banana-leaf-1.jpg',
+      'assets/images/creations/residency-krishna-hill.jpg',
+      'assets/images/creations/residency-peacock-entrance.jpg',
+      'assets/images/creations/residency-anklets-lamp.jpg',
+      'assets/images/creations/residency-kolam-doorstep.jpg',
+      'assets/images/creations/residency-krishna-with-viewer.jpg',
+      'assets/images/creations/residency-peacock-anklets-lamp.jpg',
+      'assets/images/creations/residency-peacock-kalash-doorway.jpg',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1502005097973-6a7082348e28?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&h=900&q=80&sat=-25',
+    ],
+  },
+  {
+    key: 'restaurant',
+    label: 'Restaurant',
+    headline: 'Restaurant spaces',
+    description: 'Elegant dining interiors with a richer palette, atmosphere, and visual rhythm for restaurant projects.',
+    accent: '#a76f4d',
+    stats: ['Dining', '6 images', 'Rich contrast'],
+    images: [
+      'assets/images/creations/restaurant-floral-poppy.jpg',
+      'assets/images/creations/restaurant-abstract-botanical.jpg',
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=900&h=900&q=80',
+    ],
+  },
+  {
+    key: 'playschool',
+    label: 'Playschool',
+    headline: 'Playschool spaces',
+    description: 'Playful, colorful learning environments that feel safe, creative, and joyful for children.',
+    accent: '#7f9fd2',
+    stats: ['Education', '8 images', 'Playful color'],
+    images: [
+      'assets/images/creations/restaurant-floral-poppy.jpg',
+      'assets/images/creations/residency-peacock-entrance.jpg',
+      'assets/images/creations/residency-kolam-doorstep.jpg',
+      'https://images.unsplash.com/photo-1455763916899-e8b50eca9967?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&h=900&q=80',
+      'https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=900&h=900&q=80',
+    ],
+  },
+];
 
-// 2. 3D Tilt effect on gallery items — follows cursor position
-document.querySelectorAll('.gallery-item').forEach((card) => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    // Calculate rotation (max ±6 degrees)
-    const rotateY = ((x - centerX) / centerX) * 6;
-    const rotateX = ((centerY - y) / centerY) * 6;
-    
-    card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
-    card.style.transition = 'transform 0.1s ease, box-shadow 0.3s ease';
-  });
-  
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-    card.style.transition = 'opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1), transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s ease';
-  });
-});
-
-// 3. Parallax scroll offset for gallery items — subtle depth shift
-let ticking = false;
-function updateGalleryParallax() {
+function initCreationsShowcase() {
   const section = document.getElementById('portfolio-section');
   if (!section) return;
-  
-  const sectionRect = section.getBoundingClientRect();
-  const viewportHeight = window.innerHeight;
-  
-  // Only animate when section is in view
-  if (sectionRect.top < viewportHeight && sectionRect.bottom > 0) {
-    const scrollProgress = (viewportHeight - sectionRect.top) / (viewportHeight + sectionRect.height);
-    
-    document.querySelectorAll('.gallery-item').forEach((item, index) => {
-      // Alternate depth — odd items move slower for layered feel
-      const speed = (index % 2 === 0) ? 15 : -10;
-      const yOffset = (scrollProgress - 0.5) * speed;
-      
-      // Only apply parallax when not being hovered (hover has its own transform)
-      if (!item.matches(':hover')) {
-        item.style.transform = `translateY(${yOffset}px)`;
-      }
+
+  const shell = section.querySelector('[data-creation-shell]');
+  if (!shell) return;
+
+  section.classList.add('creations-split');
+
+  shell.innerHTML = `
+    <div class="creation-idea-copy reveal" data-creation-copy>
+      <div class="creation-category-list" data-creation-categories></div>
+    </div>
+    <div class="creation-stage reveal" data-creation-stage>
+      <div class="creation-stage-head">
+        <div>
+          <div class="creation-stage-kicker" data-creation-placeholder>CAFE</div>
+          <h3 class="creation-stage-title" data-creation-title>Cafe</h3>
+        </div>
+        <button type="button" class="creation-stage-close" aria-label="Reset selection" data-creation-reset>&times;</button>
+      </div>
+      <div class="creation-stage-body">
+        <div class="creation-stage-hero">
+          <img data-creation-hero src="" alt="" />
+          <div class="creation-stage-meta">
+            <div class="creation-stage-description" data-creation-subtitle></div>
+          </div>
+        </div>
+        <div class="creation-stage-side">
+          <div class="creation-side-grid" data-creation-grid></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const titleEl = shell.querySelector('[data-creation-title]');
+  const subtitleEl = shell.querySelector('[data-creation-subtitle]');
+  const placeholderEl = shell.querySelector('[data-creation-placeholder]');
+  const gridEl = shell.querySelector('[data-creation-grid]');
+  const categoriesEl = shell.querySelector('[data-creation-categories]');
+  const heroEl = shell.querySelector('[data-creation-hero]');
+  const stage = shell.querySelector('[data-creation-stage]');
+  const resetBtn = shell.querySelector('[data-creation-reset]');
+
+  if (!titleEl || !subtitleEl || !placeholderEl || !gridEl || !categoriesEl || !heroEl || !stage) return;
+
+  const syncActivePhoto = (src) => {
+    gridEl.querySelectorAll('.creation-photo').forEach((button) => {
+      const img = button.querySelector('img');
+      const isActive = Boolean(img && img.src === src);
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
     });
-  }
-  ticking = false;
+  };
+
+  const setHeroImage = (src, alt) => {
+    if (!src) return;
+    heroEl.classList.remove('is-swapping');
+    // Restart the swap animation even when the image is already visible.
+    void heroEl.offsetWidth;
+    heroEl.src = src;
+    heroEl.alt = alt || 'Creation hero image';
+    heroEl.classList.add('is-swapping');
+    window.setTimeout(() => heroEl.classList.remove('is-swapping'), 540);
+    syncActivePhoto(src);
+  };
+
+  const renderCategory = (index) => {
+    const item = CREATIONS_SHOWCASE[index] || CREATIONS_SHOWCASE[0];
+    section.classList.add('has-selection');
+    stage.style.setProperty('--creation-accent', item.accent || '#b8933a');
+    stage.dataset.creationKey = item.key || '';
+    stage.classList.toggle('creation-stage--compact', item.key === 'playschool');
+    titleEl.textContent = item.label;
+    subtitleEl.textContent = item.description;
+    placeholderEl.textContent = item.label.toUpperCase();
+    setHeroImage(item.images[0], `${item.label} hero image`);
+
+    const maxThumbnails = item.key === 'playschool' ? 8 : 6;
+    gridEl.innerHTML = item.images.slice(1, maxThumbnails + 1).map((src, imageIndex) => `
+      <button type="button" class="creation-photo${imageIndex === 0 ? ' creation-photo-primary' : ''}" data-creation-photo-src="${src}" aria-label="${item.label} image ${imageIndex + 2}">
+        <img src="${src}" alt="${item.label} interior ${imageIndex + 2}" loading="lazy">
+      </button>
+    `).join('');
+
+    syncActivePhoto(item.images[0]);
+
+    categoriesEl.querySelectorAll('[data-creation-index]').forEach((button) => {
+      const isActive = Number(button.getAttribute('data-creation-index')) === index;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  };
+
+  categoriesEl.innerHTML = CREATIONS_SHOWCASE.map((item, index) => `
+    <button type="button" class="creation-category-card" data-creation-index="${index}" aria-pressed="false" aria-label="${item.label}">
+      <span class="creation-category-thumb">
+        <img src="${item.images[0]}" alt="${item.label} preview" loading="lazy">
+      </span>
+      <span class="creation-category-copy">
+        <strong>${item.label}</strong>
+        <small>${item.headline}</small>
+      </span>
+    </button>
+  `).join('');
+
+  categoriesEl.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-creation-index]');
+    if (!button) return;
+    const index = Number(button.getAttribute('data-creation-index'));
+    if (Number.isNaN(index)) return;
+    renderCategory(index);
+  });
+
+  gridEl.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-creation-photo-src]');
+    if (!button) return;
+    const src = button.getAttribute('data-creation-photo-src');
+    const img = button.querySelector('img');
+    setHeroImage(src, img?.alt || 'Creation hero image');
+  });
+
+  resetBtn?.addEventListener('click', () => {
+    section.classList.remove('has-selection');
+    categoriesEl.querySelectorAll('[data-creation-index]').forEach((button, index) => {
+      const isActive = index === 0;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+    renderCategory(0);
+  });
+
+  renderCategory(0);
 }
 
-window.addEventListener('scroll', () => {
-  if (!ticking) {
-    requestAnimationFrame(updateGalleryParallax);
-    ticking = true;
-  }
-}, { passive: true });
+window.initCreationsShowcase = initCreationsShowcase;
 
 // =========================================
 // PREMIUM CREATOR MODALS
@@ -248,27 +405,83 @@ if (btnCreatorsMore) {
       teamModal.classList.add('active');
       modalBackdrop.classList.add('active');
       document.body.style.overflow = 'hidden';
+      return;
+    }
+
+    const section = document.getElementById('artists-section');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
 }
 
 function initRatingModal() {
+  const STATIC_REVIEWS = [
+    {
+      name: 'Kavitha',
+      company: 'Director, Google Chennai',
+      quote: 'ashmija in color transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.',
+      image: 'https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?auto=format&fit=crop&w=900&h=620&q=80',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150',
+      date: 'May 18, 2024',
+      place: 'Chennai',
+    },
+    {
+      name: 'Vikram',
+      company: 'Curator, Taj Group',
+      quote: 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.',
+      image: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=900&h=620&q=80',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150',
+      date: 'April 7, 2024',
+      place: 'Chennai',
+    },
+    {
+      name: 'Ananya',
+      company: 'Architect, Nair Villas',
+      quote: 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.',
+      image: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=900&h=620&q=80',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150',
+      date: 'March 22, 2024',
+      place: 'Bengaluru',
+    },
+  ];
+
+  function renderStaticReviewsList() {
+    const allReviewsList = document.getElementById('all-reviews-list');
+    if (!allReviewsList) return;
+
+    allReviewsList.innerHTML = STATIC_REVIEWS.map((review) => `
+      <article class="testimonial-card glass-card" style="margin-bottom:1rem;">
+        <div class="testimonial-work-img">
+          <img src="${review.image}" alt="${review.name} project work">
+        </div>
+        <div class="testimonial-content">
+          <div class="testimonial-avatar">
+            <img src="${review.avatar}" alt="${review.name}">
+          </div>
+          <h4 class="testimonial-name">${review.name}</h4>
+          <span class="testimonial-company">${review.company}</span>
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+          </div>
+          <p class="testimonial-quote">${review.quote}</p>
+          <time class="testimonial-date">${review.date}</time>
+          <div class="creator-stats-wrap" style="margin-top:.8rem;">
+            <span class="creator-stat-badge">${review.place}</span>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  }
+
   const rateUsBtn = document.getElementById('rate-us-btn');
   const ratingModal = document.getElementById('rating-modal');
   const reviewForm = document.getElementById('review-form');
   const testimonialsGrid = document.querySelector('.testimonials-grid');
-
-  function updateAvatarSelection(selectedInput) {
-    document.querySelectorAll('.rating-avatar').forEach((label) => {
-      label.classList.toggle('selected', label.querySelector('input') === selectedInput);
-    });
-  }
-
-  document.querySelectorAll('input[name="review-avatar"]').forEach((input) => {
-    input.addEventListener('change', () => {
-      updateAvatarSelection(input);
-    });
-  });
 
   if (rateUsBtn) {
     rateUsBtn.addEventListener('click', () => {
@@ -287,9 +500,7 @@ function initRatingModal() {
       allReviewsModal.classList.add('active');
       modalBackdrop.classList.add('active');
       document.body.style.overflow = 'hidden';
-      if (typeof window.renderAllReviewsToModal === 'function') {
-        await window.renderAllReviewsToModal();
-      }
+      renderStaticReviewsList();
     });
   }
 
@@ -303,21 +514,17 @@ function initRatingModal() {
         if (!imgSrc) return;
         
         const nameEl = card.querySelector('.testimonial-name');
-        const companyEl = card.querySelector('.testimonial-company');
         
         const clientName = nameEl ? nameEl.textContent.trim() : 'Client';
-        const placeName = companyEl ? companyEl.textContent.trim() : 'ashmija in color Project';
         
         const imgModal = document.getElementById('testimonial-image-modal');
         const modalImg = document.getElementById('testimonial-modal-img');
-        const modalPlace = document.getElementById('testimonial-modal-place');
         const modalClient = document.getElementById('testimonial-modal-client');
         const backdrop = document.getElementById('modal-backdrop');
         
         if (imgModal && modalImg && backdrop) {
           modalImg.src = imgSrc;
           modalImg.alt = `${clientName} project work`;
-          if (modalPlace) modalPlace.textContent = placeName;
           if (modalClient) modalClient.textContent = clientName;
           
           imgModal.classList.add('active');
@@ -364,6 +571,13 @@ function initRatingModal() {
     });
   }
 
+  function buildReviewTextPayload(reviewText, location, workImage) {
+    const parts = [reviewText];
+    if (location) parts.push(`location:${location}`);
+    if (workImage) parts.push(`work_image:${workImage}`);
+    return parts.join('||');
+  }
+
   if (reviewForm && testimonialsGrid) {
     reviewForm.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -371,12 +585,13 @@ function initRatingModal() {
       const formData = new FormData(reviewForm);
       const name = formData.get('reviewerName').trim();
       const company = formData.get('reviewerCompany').trim();
+      const locationField = formData.get('reviewerLocation');
+      const location = typeof locationField === 'string' ? locationField.trim() : '';
       const rating = formData.get('reviewRating');
       const reviewText = formData.get('reviewText').trim();
-      const avatar = formData.get('review-avatar');
 
       if (!name || !company || !reviewText) {
-        alert('Please complete all fields before submitting your review.');
+        alert('Please complete the required fields before submitting your review.');
         return;
       }
 
@@ -388,51 +603,37 @@ function initRatingModal() {
       }
 
       try {
-        if (!window.supabase) {
-          throw new Error('Supabase client is not available.');
+        const reviewTextSummary = buildReviewTextPayload(reviewText, location, '');
+        renderStaticReviewsList?.();
+        const allReviewsList = document.getElementById('all-reviews-list');
+        if (allReviewsList) {
+          const card = document.createElement('article');
+          card.className = 'testimonial-card glass-card';
+          card.style.marginBottom = '1rem';
+          card.innerHTML = `
+            <div class="testimonial-content" style="padding-top:0;">
+              <span class="creator-role-badge">Thanks for sharing</span>
+              <h4 class="testimonial-name">${name}</h4>
+              <span class="testimonial-company">${company}</span>
+              <div class="testimonial-stars" aria-label="${rating} out of 5 stars">
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+                <i class="ti ti-star-filled" aria-hidden="true"></i>
+              </div>
+              <p class="testimonial-quote">${reviewTextSummary}</p>
+            </div>
+          `;
+          allReviewsList.prepend(card);
         }
 
-        let workImage = '';
-        const workImageFile = document.getElementById('review-work-image')?.files[0];
-        if (workImageFile) {
-          try {
-            workImage = await compressImage(workImageFile);
-          } catch (compressErr) {
-            console.warn('[review-form] image compression failed, proceeding without it:', compressErr);
-          }
-        }
-
-        let avatarUrl = avatar;
-        const avatarFile = document.getElementById('review-avatar-file')?.files[0];
-        if (avatarFile) {
-          try {
-            avatarUrl = await compressImage(avatarFile);
-          } catch (avatarCompressErr) {
-            console.warn('[review-form] avatar image compression failed, falling back to selected avatar:', avatarCompressErr);
-          }
-        }
-
-        const payload = {
-          name,
-          company,
-          rating: parseInt(rating, 10),
-          review_text: workImage ? `${reviewText}||work_image:${workImage}` : reviewText,
-          avatar_url: avatarUrl,
-          is_approved: false, // requires admin approval
-          is_pinned: false,
-          created_at: new Date().toISOString()
-        };
-
-        const { error } = await window.supabase.from('reviews').insert(payload);
-        if (error) throw error;
-
-        alert('Thank you! Your review has been submitted for approval.');
+        alert('Thanks! This static version does not store reviews, but your feedback can still be shared with the team.');
         reviewForm.reset();
-        updateAvatarSelection(document.querySelector('input[name="review-avatar"]'));
         closeAllModals();
       } catch (err) {
         console.error('[review-form] submit error:', err);
-        alert('Failed to submit review. Please try again.');
+        alert(err?.message ? `Could not process the review form: ${err.message}` : 'Could not process the review form.');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -503,7 +704,7 @@ function initContactForm() {
 document.addEventListener('DOMContentLoaded', () => {
   initContactForm();
   initRatingModal();
-  observeGalleryGrid();
+  initCreationsShowcase();
   initRealtimeGallery();
 });
 
@@ -519,6 +720,17 @@ document.addEventListener('DOMContentLoaded', () => {
 window.layoutMasonry = function () {
   const galleryGrid = document.querySelector('.gallery-grid');
   if (!galleryGrid) return;
+  if (galleryGrid.closest('.creations-split')) {
+    galleryGrid.classList.remove('masonry-active');
+    galleryGrid.style.height = '';
+    galleryGrid.querySelectorAll('.gallery-item').forEach((item) => {
+      item.style.position = '';
+      item.style.width = '';
+      item.style.left = '';
+      item.style.top = '';
+    });
+    return;
+  }
 
   const items = Array.from(galleryGrid.querySelectorAll('.gallery-item'));
   if (items.length === 0) return;
@@ -617,6 +829,7 @@ let livingGalleryInterval = null;
 window.startLivingGallery = function () {
   const galleryGrid = document.querySelector('.gallery-grid');
   if (!galleryGrid) return;
+  if (galleryGrid.closest('.creations-split')) return;
 
   if (livingGalleryInterval) {
     clearInterval(livingGalleryInterval);
@@ -663,37 +876,8 @@ window.startLivingGallery = function () {
  * Dynamic updates subscription for uploads, edits, and deletions.
  */
 window.initRealtimeGallery = function () {
-  if (!window.supabase) {
-    console.warn('[realtime] Supabase not available, skipping realtime database sync.');
-    return;
-  }
-
-  console.log('[realtime] Subscribing to real-time ashmija in color exhibitions...');
-
-  // 1. Subscribe to portfolio table updates
-  window.supabase
-    .channel('public:portfolio-main-site')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'portfolio' }, async (payload) => {
-      console.log('[realtime] Real-time portfolio update received:', payload);
-      if (typeof window.renderPortfolioToMainSite === 'function') {
-        await window.renderPortfolioToMainSite();
-        setTimeout(() => {
-          window.layoutMasonry();
-        }, 150);
-      }
-    })
-    .subscribe();
-
-  // 2. Subscribe to artists table updates
-  window.supabase
-    .channel('public:artists-main-site')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'artists' }, async (payload) => {
-      console.log('[realtime] Real-time artists update received:', payload);
-      if (typeof window.renderArtistsToMainSite === 'function') {
-        await window.renderArtistsToMainSite();
-      }
-    })
-    .subscribe();
+  // Static site version does not subscribe to backend updates.
+  return;
 };
 
 
@@ -710,6 +894,10 @@ function observeGalleryGrid() {
   if (!galleryGrid) return;
 
   const observer = new MutationObserver(() => {
+    if (galleryGrid.closest('.creations-split')) {
+      window.initCreationsShowcase?.();
+      return;
+    }
     window.layoutMasonry();
   });
 

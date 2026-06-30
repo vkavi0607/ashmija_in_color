@@ -5,7 +5,9 @@
   const TABLE_NAME = 'reviews';
 
   let _reviews = [];
-  let _activeTab = 'pending';
+  let _searchTimer = null;
+  let _editingId = null;
+  let _schemaWarningShown = false;
 
   function getDb() {
     return window.supabase || null;
@@ -14,9 +16,9 @@
   function showToastSafe(type, message) {
     if (typeof window.showToast === 'function') {
       window.showToast(message, type);
-    } else {
-      console[type === 'error' ? 'error' : 'log']('[reviews] ' + message);
+      return;
     }
+    console[type === 'error' ? 'error' : 'log'](`[reviews] ${message}`);
   }
 
   async function logAudit(module, action, details = {}) {
@@ -41,248 +43,280 @@
     }
   }
 
-  function escapeHtml(value) {
-    const div = document.createElement('div');
-    div.textContent = value;
-    return div.innerHTML;
+  function escHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
-  function getStarRating(rating) {
-    const count = Number.isFinite(rating) ? Math.max(0, Math.min(5, rating)) : 0;
-    return Array.from({ length: 5 }, (_, i) => (i < count ? '★' : '☆')).join('');
-  }
-
-  function splitReviewText(value) {
-    const rawText = value || '';
-    if (!rawText.includes('||work_image:')) {
-      return { text: rawText, workImage: '' };
-    }
-
-    const [text, workImage = ''] = rawText.split('||work_image:');
-    return { text, workImage };
-  }
-
-  function formatReviewDate(value) {
-    if (!value) return '';
+  function formatDate(value) {
+    if (!value) return '-';
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    if (Number.isNaN(date.getTime())) return '-';
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  function getAvatarMarkup(review) {
-    if (review.avatar_url) {
-      return `<img src="${escapeHtml(review.avatar_url)}" alt="${escapeHtml(review.name || 'Client')}">`;
-    }
-    const initials = (review.name || '').split(' ').filter(Boolean).slice(0, 2).map(word => word.charAt(0).toUpperCase()).join('') || 'CL';
-    return `<div class="review-avatar-fallback">${initials}</div>`;
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
   }
 
-  function getStatusLabel(review) {
-    if (review.is_approved) {
-      return review.is_pinned ? 'Pinned' : 'Approved';
-    }
-    return 'Pending';
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+  }
+
+  function extractWorkImage(reviewText) {
+    const text = String(reviewText || '');
+    const marker = '||work_image:';
+    const markerIndex = text.indexOf(marker);
+    if (markerIndex < 0) return { text, workImage: '' };
+    return {
+      text: text.slice(0, markerIndex),
+      workImage: text.slice(markerIndex + marker.length),
+    };
+  }
+
+  function extractReviewLocation(reviewText) {
+    const text = String(reviewText || '');
+    const marker = '||location:';
+    const markerIndex = text.indexOf(marker);
+    if (markerIndex < 0) return { text, location: '' };
+    const remainder = text.slice(markerIndex + marker.length);
+    const nextMarkerIndex = remainder.indexOf('||');
+    return {
+      text: text.slice(0, markerIndex),
+      location: nextMarkerIndex >= 0 ? remainder.slice(0, nextMarkerIndex) : remainder,
+    };
+  }
+
+  function parseReviewText(reviewText) {
+    const withLocation = extractReviewLocation(reviewText);
+    const withImage = extractWorkImage(withLocation.text);
+    return {
+      text: withImage.text,
+      location: withLocation.location,
+      workImage: withImage.workImage,
+    };
+  }
+
+  function buildStars(rating) {
+    const count = Math.min(5, Math.max(0, parseInt(rating, 10) || 0));
+    return `<span class="review-stars" aria-hidden="true">${Array.from({ length: 5 }, (_, index) => {
+      const filled = index < count;
+      return `<i class="ti ${filled ? 'ti-star-filled' : 'ti-star'}" aria-hidden="true"></i>`;
+    }).join('')}</span>`;
+  }
+
+  function buildRatingPicker(rating) {
+    const current = Math.min(5, Math.max(1, parseInt(rating, 10) || 5));
+    return `
+      <div class="review-rating-picker" id="review-rating-picker" role="radiogroup" aria-label="Review rating">
+        ${[5, 4, 3, 2, 1].map((value) => `
+          <button
+            type="button"
+            class="review-rating-star${value === current ? ' selected' : ''}"
+            data-rating="${value}"
+            role="radio"
+            aria-checked="${value === current ? 'true' : 'false'}"
+            aria-label="${value} star${value === 1 ? '' : 's'}">
+            <i class="ti ti-star-filled" aria-hidden="true"></i>
+            <span>${value}</span>
+          </button>`).join('')}
+        <input type="hidden" id="review-rating" value="${current}">
+      </div>
+    `;
   }
 
   function buildReviewRow(review) {
-    const avatar = getAvatarMarkup(review);
-    const rating = getStarRating(review.rating);
-    const company = escapeHtml(review.company || '—');
-    const name = escapeHtml(review.name || 'Anonymous');
-    const { text: cleanReviewText, workImage } = splitReviewText(review.review_text || review.text || '');
-    const quote = escapeHtml(cleanReviewText || 'No review provided');
-    const pinnedBadge = review.is_pinned ? '<span class="badge badge-success">Pinned</span>' : '';
-    const workImageBadge = workImage ? '<span class="badge badge-success">Work Photo</span>' : '';
-
-    const actionButtons = review.is_approved
-      ? `
-        <button class="btn btn-ghost btn-sm btn-pin-review" data-id="${review.id}" data-pinned="${review.is_pinned ? 'true' : 'false'}">
-          ${review.is_pinned ? 'Unpin' : 'Pin to Homepage'}
-        </button>
-        <button class="btn btn-ghost btn-sm btn-delete-review" data-id="${review.id}">
-          <i class="ti ti-trash"></i>
-        </button>
-      `
-      : `
-        <button class="btn btn-ghost btn-sm btn-approve-review" data-id="${review.id}">
-          Approve
-        </button>
-        <button class="btn btn-ghost btn-sm btn-delete-review" data-id="${review.id}">
-          Reject
-        </button>
-      `;
+    const name = escHtml(review.name || 'Unnamed client');
+    const company = escHtml(review.company || '—');
+    const rating = buildStars(review.rating);
+    const featured = review.is_pinned ? 'Yes' : 'No';
+    const status = review.is_approved ? 'Approved' : 'Pending';
+    const sortValue = formatDate(review.created_at);
+    const parsedReview = parseReviewText(review.review_text);
+    const locationValue = escHtml(review.location || parsedReview.location || '—');
+    const reviewText = escHtml(String(parsedReview.text || ''));
+    const previewText = reviewText.length > 80 ? `${reviewText.slice(0, 80)}…` : reviewText || '—';
 
     return `
       <tr data-id="${review.id}">
-        <td style="width:56px; text-align:center;">
-          <div class="review-avatar-cell">${avatar}</div>
-        </td>
+        <td style="text-align:center;">${rating}</td>
         <td>${name}</td>
         <td>${company}</td>
-        <td>${rating}</td>
-        <td>${pinnedBadge}${workImageBadge}</td>
-        <td>${getStatusLabel(review)}</td>
-        <td>${review.is_approved ? '' : '-'}</td>
-        <td style="white-space:nowrap;">${actionButtons}</td>
+        <td>${locationValue}</td>
+        <td>${parsedReview.workImage ? `<div class="review-work-photo"><img src="${escHtml(parsedReview.workImage)}" alt="${escHtml(review.name || 'Client')} project work" loading="lazy"><span class="review-work-photo-location">${locationValue}</span></div>` : `<span style="color:var(--muted);">—</span>`}</td>
+        <td title="${reviewText}">${previewText}</td>
+        <td>${review.rating != null ? escHtml(String(review.rating)) : '0'}</td>
+        <td>${featured}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm btn-toggle-approval" data-id="${review.id}" title="Toggle approval">
+            ${status}
+          </button>
+        </td>
+        <td>${sortValue}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-ghost btn-sm btn-edit-review" data-id="${review.id}" title="Edit review">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <button class="btn btn-ghost btn-sm btn-delete-review" data-id="${review.id}" title="Delete review">
+            <i class="ti ti-trash"></i>
+          </button>
+        </td>
       </tr>`;
   }
 
-  function renderReviewCountTabs() {
-    const pendingCount = _reviews.filter(item => !item.is_approved).length;
-    const approvedCount = _reviews.filter(item => item.is_approved).length;
-
-    const pendingBtn = document.getElementById('btn-reviews-pending');
-    const approvedBtn = document.getElementById('btn-reviews-approved');
-    const pendingCountEl = document.getElementById('reviews-count-pending');
-    const approvedCountEl = document.getElementById('reviews-count-approved');
-
-    if (pendingCountEl) pendingCountEl.textContent = `(${pendingCount})`;
-    if (approvedCountEl) approvedCountEl.textContent = `(${approvedCount})`;
-
-    if (pendingBtn && approvedBtn) {
-      if (_activeTab === 'pending') {
-        pendingBtn.classList.add('active');
-        approvedBtn.classList.remove('active');
-      } else {
-        pendingBtn.classList.remove('active');
-        approvedBtn.classList.add('active');
-      }
-    }
-  }
-
-  function renderReviewTable() {
+  function renderReviewTable(items = _reviews) {
     const tbody = document.getElementById('reviews-table-body');
     if (!tbody) return;
 
-    const rows = _reviews.filter(item => item.is_approved === (_activeTab === 'approved'));
-
-    if (!rows.length) {
+    if (!items.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8">
+          <td colspan="11">
             <div class="empty-state">
               <i class="ti ti-star empty-icon"></i>
               <div class="empty-title">No reviews found</div>
-              <div class="empty-text">Switch tabs or add a review to get started.</div>
+              <div class="empty-text">Client testimonials will appear here once submitted.</div>
             </div>
           </td>
         </tr>`;
       return;
     }
 
-    tbody.innerHTML = rows.map(buildReviewRow).join('');
+    tbody.innerHTML = items.map(buildReviewRow).join('');
   }
 
-  function getPinnedCount() {
-    return _reviews.filter(item => item.is_approved && item.is_pinned).length;
-  }
-
-  async function loadReviews() {
-    try {
-      const db = getDb();
-      if (!db) throw new Error('Supabase client not available');
-
-      const { data, error } = await db.from(TABLE_NAME)
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      _reviews = data || [];
-      renderReviewCountTabs();
-      renderReviewTable();
-    } catch (err) {
-      console.error('[reviews] load error', err);
-      showToastSafe('error', 'Unable to load reviews.');
-    }
-  }
-
-  async function saveReview(reviewId, payload) {
+  async function fetchReviews() {
     const db = getDb();
     if (!db) throw new Error('Supabase client not available');
+    if (shouldBypassRemoteData()) return [];
 
-    if (reviewId) {
-      const { error } = await db.from(TABLE_NAME).update(payload).eq('id', reviewId);
-      if (error) throw error;
+    const { data, error } = await db.from(TABLE_NAME)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  function filterReviews(query) {
+    const search = String(query || document.getElementById('reviews-search')?.value || '').trim().toLowerCase();
+    if (!search) {
+      renderReviewTable(_reviews);
       return;
     }
 
-    const { error } = await db.from(TABLE_NAME).insert(payload);
-    if (error) throw error;
+    const filtered = _reviews.filter((item) => {
+      return [item.name, item.company, item.location, item.review_text]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(search));
+    });
+
+    renderReviewTable(filtered);
   }
 
-  async function openReviewModal(editReview = null) {
-    const isEdit = Boolean(editReview);
-    let reviewTextValue = editReview?.review_text || editReview?.text || '';
-    let hasWorkImage = false;
-    let workImageSuffix = '';
-    if (reviewTextValue.includes('||work_image:')) {
-      const parts = reviewTextValue.split('||work_image:');
-      reviewTextValue = parts[0];
-      hasWorkImage = true;
-      workImageSuffix = '||work_image:' + parts[1];
-    }
+  async function openReviewModal(isEdit, review = {}) {
+    _editingId = isEdit ? review.id : null;
 
     openModal({
       title: isEdit ? 'Edit Review' : 'Add Review',
-      size: 'large',
+      size: 'lg',
       bodyHTML: `
         <div class="form-grid">
-          <label>
-            Client Name
-            <input type="text" id="review-name" value="${escapeHtml(editReview?.name || '')}" placeholder="Client name" />
-          </label>
-          <label>
-            Company
-            <input type="text" id="review-company" value="${escapeHtml(editReview?.company || '')}" placeholder="Company or role" />
-          </label>
-          <label>
-            Avatar URL
-            <input type="url" id="review-avatar-url" value="${escapeHtml(editReview?.avatar_url || '')}" placeholder="https://..." />
-          </label>
-          <label>
-            Rating
-            <select id="review-rating">
-              ${[1, 2, 3, 4, 5].map(score => `<option value="${score}" ${editReview?.rating === score ? 'selected' : ''}>${score} ★</option>`).join('')}
-            </select>
-          </label>
-          <label style="grid-column:1/-1;">
-            Review Text
-            <textarea id="review-text" rows="6" placeholder="Client review text">${escapeHtml(reviewTextValue)}</textarea>
-          </label>
+          <div class="form-group full">
+            <label class="form-label" for="review-name">Client Name</label>
+            <input class="form-input" type="text" id="review-name" value="${escHtml(review.name || '')}" placeholder="Enter client name" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="review-company">Company</label>
+            <input class="form-input" type="text" id="review-company" value="${escHtml(review.company || '')}" placeholder="Enter company name" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="review-location">Location</label>
+            <input class="form-input" type="text" id="review-location" value="${escHtml(review.location || parseReviewText(review.review_text).location || '')}" placeholder="Enter project location" />
+          </div>
+          <div class="form-group half">
+            <label class="form-label" for="review-rating">Rating</label>
+            ${buildRatingPicker(review.rating)}
+          </div>
+          <div class="form-group half">
+            <label class="form-label" for="review-avatar-url">Avatar URL</label>
+            <input class="form-input" type="text" id="review-avatar-url" value="${escHtml(review.avatar_url || '')}" placeholder="https://..." />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="review-text">Review Text</label>
+            <textarea class="form-input" id="review-text" rows="5" placeholder="Share the testimonial...">${escHtml(parseReviewText(review.review_text).text || '')}</textarea>
+          </div>
         </div>
       `,
       onConfirm: async function () {
-        const name = document.getElementById('review-name')?.value.trim();
-        const company = document.getElementById('review-company')?.value.trim();
-        const avatarUrl = document.getElementById('review-avatar-url')?.value.trim();
-        const rating = Number(document.getElementById('review-rating')?.value || 0);
-        const reviewText = document.getElementById('review-text')?.value.trim();
+        const name = document.getElementById('review-name')?.value.trim() || '';
+        const company = document.getElementById('review-company')?.value.trim() || '';
+        const location = document.getElementById('review-location')?.value.trim() || '';
+        const rating = parseInt(document.getElementById('review-rating')?.value, 10) || 0;
+        const avatarUrl = document.getElementById('review-avatar-url')?.value.trim() || null;
+        const reviewText = document.getElementById('review-text')?.value.trim() || '';
+        const isApproved = _editingId ? review.is_approved : false;
+        const isPinned = _editingId ? review.is_pinned : false;
+        const existingReview = parseReviewText(review.review_text);
+        const existingWorkImage = existingReview.workImage;
+        const existingLocation = existingReview.location;
 
-        if (!name || !reviewText) {
-          showToastSafe('error', 'Name and review text are required.');
+        if (!name) {
+          showToastSafe('error', 'Please enter the client name.');
+          return;
+        }
+        if (!company) {
+          showToastSafe('error', 'Please enter the company name.');
+          return;
+        }
+        if (!location) {
+          showToastSafe('error', 'Please enter the location.');
+          return;
+        }
+        if (!reviewText) {
+          showToastSafe('error', 'Please enter the review text.');
           return;
         }
 
         try {
+          const db = getDb();
+          if (!db) throw new Error('Supabase client not available');
+
           const payload = {
             name,
             company,
-            avatar_url: avatarUrl,
+            location,
+            review_text: [reviewText, location || existingLocation ? `location:${location || existingLocation}` : '', existingWorkImage ? `work_image:${existingWorkImage}` : '']
+              .filter(Boolean)
+              .join('||'),
             rating,
-            review_text: hasWorkImage ? (reviewText + workImageSuffix) : reviewText,
-            is_approved: editReview?.is_approved ?? false,
-            is_pinned: editReview?.is_pinned ?? false,
-            created_at: editReview?.created_at || new Date().toISOString(),
+            avatar_url: avatarUrl,
+            is_approved: isApproved,
+            is_pinned: isPinned,
           };
 
-          await saveReview(editReview?.id || null, payload);
-          await logAudit('reviews', editReview ? 'update' : 'create', { name, company });
-          showToastSafe('success', `Review ${editReview ? 'updated' : 'added'} successfully.`);
+          if (_editingId) {
+            const { error } = await db.from(TABLE_NAME)
+              .update(payload)
+              .eq('id', _editingId);
+            if (error) throw error;
+            await logAudit('reviews', 'update', { id: _editingId, name });
+            showToastSafe('success', 'Review updated successfully.');
+          } else {
+            const { error } = await db.from(TABLE_NAME)
+              .insert(payload);
+            if (error) throw error;
+            await logAudit('reviews', 'create', { name });
+            showToastSafe('success', 'Review added successfully.');
+          }
+
           closeModal();
           await loadReviews();
         } catch (err) {
@@ -291,17 +325,38 @@
         }
       },
     });
+
+    setTimeout(() => {
+      const picker = document.getElementById('review-rating-picker');
+      const hidden = document.getElementById('review-rating');
+      if (!picker || !hidden) return;
+
+      picker.querySelectorAll('.review-rating-star').forEach((button) => {
+        button.addEventListener('click', () => {
+          const value = String(button.getAttribute('data-rating') || '0');
+          hidden.value = value;
+          picker.querySelectorAll('.review-rating-star').forEach((item) => {
+            const selected = item === button;
+            item.classList.toggle('selected', selected);
+            item.setAttribute('aria-checked', selected ? 'true' : 'false');
+          });
+        });
+      });
+    }, 0);
   }
 
-  async function confirmAndDeleteReview(id) {
+  async function deleteReviewItem(id) {
     if (!id || !window.confirm('Delete this review?')) return;
+
     try {
       const db = getDb();
       if (!db) throw new Error('Supabase client not available');
+
       const { error } = await db.from(TABLE_NAME).delete().eq('id', id);
       if (error) throw error;
+
       await logAudit('reviews', 'delete', { id });
-      showToastSafe('success', 'Review deleted.');
+      showToastSafe('success', 'Review deleted successfully.');
       await loadReviews();
     } catch (err) {
       console.error('[reviews] delete error', err);
@@ -309,313 +364,101 @@
     }
   }
 
-  async function approveReview(id) {
-    try {
-      const db = getDb();
-      if (!db) throw new Error('Supabase client not available');
-      const { error } = await db.from(TABLE_NAME).update({ is_approved: true }).eq('id', id);
-      if (error) throw error;
-      await logAudit('reviews', 'approve', { id });
-      showToastSafe('success', 'Review approved.');
-      _activeTab = 'approved';
-      await loadReviews();
-    } catch (err) {
-      console.error('[reviews] approve error', err);
-      showToastSafe('error', err.message || 'Could not approve review.');
-    }
-  }
-
-  async function togglePinReview(id, currentPinned) {
-    try {
-      const db = getDb();
-      if (!db) throw new Error('Supabase client not available');
-
-      if (!currentPinned && getPinnedCount() >= 3) {
-        showToastSafe('warning', 'Unpin one before pinning another.');
-        return;
-      }
-
-      const { error } = await db.from(TABLE_NAME).update({ is_pinned: !currentPinned }).eq('id', id);
-      if (error) throw error;
-      await logAudit('reviews', currentPinned ? 'unpin' : 'pin', { id });
-      showToastSafe('success', currentPinned ? 'Review unpinned.' : 'Review pinned.');
-      await loadReviews();
-    } catch (err) {
-      console.error('[reviews] pin error', err);
-      showToastSafe('error', err.message || 'Could not update pin status.');
-    }
-  }
-
   async function handleReviewAction(event) {
-    const approveBtn = event.target.closest('.btn-approve-review');
-    const pinBtn = event.target.closest('.btn-pin-review');
-    const deleteBtn = event.target.closest('.btn-delete-review');
     const editBtn = event.target.closest('.btn-edit-review');
+    const deleteBtn = event.target.closest('.btn-delete-review');
+    const toggleBtn = event.target.closest('.btn-toggle-approval');
 
-    if (approveBtn) {
-      await approveReview(approveBtn.dataset.id);
-      return;
-    }
-    if (pinBtn) {
-      await togglePinReview(pinBtn.dataset.id, pinBtn.dataset.pinned === 'true');
-      return;
-    }
-    if (deleteBtn) {
-      await confirmAndDeleteReview(deleteBtn.dataset.id);
-      return;
-    }
     if (editBtn) {
-      const review = _reviews.find(item => String(item.id) === String(editBtn.dataset.id));
-      if (review) await openReviewModal(review);
+      const id = editBtn.dataset.id;
+      const review = _reviews.find((item) => String(item.id) === String(id));
+      if (review) openReviewModal(true, review);
+      return;
+    }
+
+    if (deleteBtn) {
+      const id = deleteBtn.dataset.id;
+      await deleteReviewItem(id);
+      return;
+    }
+
+    if (toggleBtn) {
+      const id = toggleBtn.dataset.id;
+      await toggleReviewApproval(id);
     }
   }
 
-  function setActiveTab(tab) {
-    _activeTab = tab;
-    renderReviewCountTabs();
-    renderReviewTable();
-  }
+  async function toggleReviewApproval(id) {
+    if (!id) return;
 
-  async function loadReviewsFromDb() {
-    const db = getDb();
-    if (!db) return;
+    const review = _reviews.find((item) => String(item.id) === String(id));
+    if (!review) return;
 
-    const { data, error } = await db.from(TABLE_NAME).select('*').order('created_at', { ascending: false });
-    if (error) {
-      throw error;
+    try {
+      const db = getDb();
+      if (!db) throw new Error('Supabase client not available');
+
+      const newStatus = !review.is_approved;
+      const { error } = await db.from(TABLE_NAME).update({ is_approved: newStatus }).eq('id', id);
+      if (error) throw error;
+
+      review.is_approved = newStatus;
+      renderReviewTable(_reviews);
+      await logAudit('reviews', 'toggle_approval', { id, is_approved: newStatus });
+      showToastSafe('success', `Review ${newStatus ? 'approved' : 'marked pending'}.`);
+    } catch (err) {
+      console.error('[reviews] approval toggle error', err);
+      showToastSafe('error', err.message || 'Could not change approval status.');
     }
-    _reviews = data || [];
   }
 
   async function loadReviews() {
     try {
-      await loadReviewsFromDb();
-      renderReviewCountTabs();
-      renderReviewTable();
+      _reviews = await fetchReviews();
+      renderReviewTable(_reviews);
     } catch (err) {
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown) {
+          showToastSafe('warning', 'Reviews table is missing in Supabase. Showing an empty list until the schema is applied.');
+          _schemaWarningShown = true;
+        }
+        _reviews = [];
+        renderReviewTable(_reviews);
+        return;
+      }
+
       console.error('[reviews] load error', err);
       showToastSafe('error', 'Unable to load reviews.');
     }
   }
 
-  async function renderReviewsToMainSite(supabaseClient) {
-    const grid = document.querySelector('.testimonials-grid');
-    if (!grid) {
-      console.warn('[renderReviewsToMainSite] .testimonials-grid not found.');
-      return;
-    }
+  function initAdminReviewSection() {
+    const section = document.getElementById(ADMIN_SECTION_ID);
+    if (!section) return;
 
-    const originalHtml = grid.innerHTML;
-    grid.innerHTML = `
-      <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:60px 0;gap:12px;color:var(--muted,#7a7268);font-size:0.85rem;">
-        <span style="display:inline-block;width:20px;height:20px;border:2px solid #e0d9ce;border-top-color:#b8933a;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
-        Loading testimonials…
-      </div>`;
-
-    try {
-      const db = supabaseClient || window.supabase;
-      if (!db) {
-        console.warn('[renderReviewsToMainSite] Supabase client not found.');
-        grid.innerHTML = originalHtml;
-        return;
-      }
-
-      const { data, error } = await db.from(TABLE_NAME)
-        .select('id, name, company, avatar_url, review_text, rating, created_at')
-        .eq('is_approved', true)
-        .eq('is_pinned', true)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      if (error) {
-        console.warn('[renderReviewsToMainSite] Fetch error:', error.message);
-        grid.innerHTML = originalHtml;
-        return;
-      }
-
-      const reviews = data || [];
-      if (!reviews.length) {
-        grid.innerHTML = originalHtml;
-        return;
-      }
-
-      grid.innerHTML = reviews.map((review) => {
-        const { text: rawText, workImage } = splitReviewText(review.review_text || review.text || '');
-        const rating = Math.max(0, Math.min(5, parseInt(review.rating, 10) || 0));
-        const stars = Array.from({ length: 5 }, (_, i) => (
-          `<i class="ti ti-star-filled${i < rating ? '' : ' testimonial-star-muted'}" aria-hidden="true"></i>`
-        )).join('');
-        const dateText = formatReviewDate(review.created_at);
-
-        const workImageHtml = workImage
-          ? `<div class="testimonial-work-img"><img src="${escapeHtml(workImage)}" alt="${escapeHtml(review.name || 'Client')} project work"></div>`
-          : `<div class="testimonial-work-img testimonial-work-img-fallback"><span>ashmija in color Project</span></div>`;
-        const avatarHtml = review.avatar_url 
-          ? `<img src="${escapeHtml(review.avatar_url)}" alt="${escapeHtml(review.name || 'Client')}">`
-          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 100%; height: 100%; padding: 16px; color: var(--gold); box-sizing: border-box; display: block;">
-               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-             </svg>`;
-
-        return `
-        <article class="testimonial-card glass-card">
-          ${workImageHtml}
-          <div class="testimonial-content">
-            <div class="testimonial-avatar">
-              ${avatarHtml}
-            </div>
-            <h4 class="testimonial-name">${escapeHtml(review.name || 'Client')}</h4>
-            <span class="testimonial-company">${escapeHtml(review.company || '')}</span>
-            <div class="testimonial-stars" aria-label="${rating} out of 5 stars">${stars}</div>
-            <p class="testimonial-quote">${escapeHtml(rawText)}</p>
-            ${dateText ? `<time class="testimonial-date">${escapeHtml(dateText)}</time>` : ''}
-          </div>
-        </article>`;
-      }).join('');
-
-      grid.querySelectorAll('.testimonial-company').forEach((el, index) => {
-        el.textContent = reviews[index]?.company || '';
-      });
-
-      if (window.revealObserver) {
-        window.revealObserver.observe(grid);
-      }
-    } catch (err) {
-      console.error('[renderReviewsToMainSite] error', err);
-      grid.innerHTML = originalHtml;
-    }
-  }
-
-  async function renderAllReviewsToModal(supabaseClient) {
-    const listContainer = document.getElementById('all-reviews-list');
-    if (!listContainer) {
-      console.warn('[renderAllReviewsToModal] #all-reviews-list not found.');
-      return;
-    }
-
-    listContainer.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;padding:40px 0;gap:12px;color:var(--muted,#7a7268);font-size:0.85rem;">
-        <span style="display:inline-block;width:20px;height:20px;border:2px solid #e0d9ce;border-top-color:#b8933a;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
-        Loading all reviews…
-      </div>`;
-
-    try {
-      const db = supabaseClient || window.supabase;
-      if (!db) {
-        console.warn('[renderAllReviewsToModal] Supabase client not found.');
-        listContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Database connection offline.</div>';
-        return;
-      }
-
-      const { data, error } = await db.from(TABLE_NAME)
-        .select('id, name, company, avatar_url, review_text, rating, created_at')
-        .eq('is_approved', true)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.warn('[renderAllReviewsToModal] Fetch error:', error.message);
-        listContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Failed to load reviews.</div>';
-        return;
-      }
-
-      const reviews = data || [];
-      if (!reviews.length) {
-        listContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">No reviews approved yet.</div>';
-        return;
-      }
-
-      listContainer.innerHTML = reviews.map((review) => {
-        const { text: rawText } = splitReviewText(review.review_text || review.text || '');
-        const rating = Math.max(0, Math.min(5, parseInt(review.rating, 10) || 0));
-        const stars = Array.from({ length: 5 }, (_, i) => (
-          `<i class="ti ti-star-filled${i < rating ? '' : ' testimonial-star-muted'}" aria-hidden="true"></i>`
-        )).join('');
-        const dateText = formatReviewDate(review.created_at);
-
-        const avatarHtml = review.avatar_url 
-          ? `<img src="${escapeHtml(review.avatar_url)}" alt="${escapeHtml(review.name || 'Client')}">`
-          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 100%; height: 100%; padding: 12px; color: var(--gold); box-sizing: border-box; display: block;">
-               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-             </svg>`;
-
-        return `
-          <div class="all-reviews-item">
-            <div class="all-reviews-header">
-              <div class="all-reviews-avatar">
-                ${avatarHtml}
-              </div>
-              <div class="all-reviews-meta">
-                <h4 class="all-reviews-name">${escapeHtml(review.name || 'Client')}</h4>
-                <span class="all-reviews-company">${escapeHtml(review.company || '')}</span>
-              </div>
-              <div class="all-reviews-rating" aria-label="${rating} out of 5 stars">${stars}</div>
-            </div>
-            <p class="all-reviews-quote">${escapeHtml(rawText)}</p>
-            ${dateText ? `<time class="all-reviews-date">${escapeHtml(dateText)}</time>` : ''}
-          </div>`;
-      }).join('');
-
-    } catch (err) {
-      console.error('[renderAllReviewsToModal] error', err);
-      listContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Failed to load reviews.</div>';
-    }
-  }
-
-  window.renderReviewsToMainSite = renderReviewsToMainSite;
-  window.renderAllReviewsToModal = renderAllReviewsToModal;
-
-  function initReviewTabs() {
-    const pendingBtn = document.getElementById('btn-reviews-pending');
-    const approvedBtn = document.getElementById('btn-reviews-approved');
-    const addBtn = document.getElementById('btn-add-review');
+    const addButton = document.getElementById('btn-add-review');
     const tbody = document.getElementById('reviews-table-body');
+    const searchInput = document.getElementById('reviews-search');
 
-    if (pendingBtn) {
-      pendingBtn.addEventListener('click', () => setActiveTab('pending'));
-    }
-    if (approvedBtn) {
-      approvedBtn.addEventListener('click', () => setActiveTab('approved'));
-    }
-    if (addBtn) {
-      addBtn.addEventListener('click', () => openReviewModal());
+    if (addButton) {
+      addButton.addEventListener('click', () => openReviewModal(false));
     }
     if (tbody) {
       tbody.addEventListener('click', handleReviewAction);
     }
-  }
-
-  function createReviewTabs() {
-    const container = document.createElement('div');
-    container.className = 'section-tabs';
-    container.style.display = 'flex';
-    container.style.gap = '0.5rem';
-    container.style.marginBottom = '1rem';
-    container.innerHTML = `
-      <button class="btn btn-ghost btn-sm active" id="btn-reviews-pending">
-        Pending <span id="reviews-count-pending">(0)</span>
-      </button>
-      <button class="btn btn-ghost btn-sm" id="btn-reviews-approved">
-        Approved <span id="reviews-count-approved">(0)</span>
-      </button>
-    `;
-    return container;
-  }
-
-  function initAdminReviews() {
-    const section = document.getElementById(ADMIN_SECTION_ID);
-    if (!section) return;
-
-    const header = section.querySelector('.section-header');
-    if (header && !document.getElementById('btn-reviews-pending')) {
-      header.insertAdjacentElement('afterend', createReviewTabs());
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        clearTimeout(_searchTimer);
+        _searchTimer = setTimeout(() => filterReviews(searchInput.value), 180);
+      });
     }
 
-    initReviewTabs();
     loadReviews();
   }
 
-  window.initReviews = initAdminReviews;
+  window.initReviews = initAdminReviewSection;
 
   document.addEventListener('DOMContentLoaded', function () {
-    initAdminReviews();
+    initAdminReviewSection();
   });
 })();

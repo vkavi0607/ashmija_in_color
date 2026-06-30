@@ -13,6 +13,13 @@
  */
 
 (function () {
+  window.isLocalPreviewMode = function isLocalPreviewMode() {
+    return window.location.protocol === 'file:';
+  };
+
+  window.shouldBypassRemoteData = function shouldBypassRemoteData() {
+    return window.isLocalPreviewMode();
+  };
 
   /* ─── 1. Configuration ──────────────────────────────────────────── */
 
@@ -24,8 +31,8 @@
    * separate non-committed config.js so secrets stay out of source
    * control.
    */
-  const SUPABASE_URL = 'https://jxvbtepqxsoyhdtdhpzi.supabase.co';       // e.g. https://xxxx.supabase.co
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dmJ0ZXBxeHNveWhkdGRocHppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzODkzNjAsImV4cCI6MjA5NTk2NTM2MH0.6g_zFLF_gQ_AZrYXK0K_WAlgOLWe2I-4YXwwc7c98Ls';  // public anon key
+  const SUPABASE_URL = 'https://dtsxrlmxshczokvbvyaf.supabase.co';       // e.g. https://xxxx.supabase.co
+  const SUPABASE_ANON_KEY = 'sb_publishable_9Ghx4Bm5HpKGWaxFzgQSTw_slL6cZop';  // public publishable key
 
 
   /* ─── 2. Client initialisation ──────────────────────────────────── */

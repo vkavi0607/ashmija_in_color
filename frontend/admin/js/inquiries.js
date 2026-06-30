@@ -47,6 +47,18 @@
   let _searchQuery  = '';    // live search string
   let _searchTimer  = null;  // debounce handle
   let _panelId      = null;  // UUID open in the detail panel (or null)
+  let _schemaWarningShown = false;
+
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
+  }
+
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+  }
 
 
   /* ================================================================
@@ -472,6 +484,10 @@
 
   async function fetchInquiries() {
     try {
+      if (shouldBypassRemoteData()) {
+        return [];
+      }
+
       const { data, error } = await window.supabase
         .from(TABLE)
         .select('*')
@@ -480,6 +496,14 @@
       if (error) throw error;
       return data || [];
     } catch (err) {
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown && typeof window.showToast === 'function') {
+          window.showToast('Inquiries table is missing in Supabase. Showing an empty inbox until the schema is applied.', 'warning');
+          _schemaWarningShown = true;
+        }
+        return [];
+      }
+
       console.error('[inquiries] fetch error:', err);
       window.showToast('Failed to load inquiries: ' + (err.message || 'Unknown error'), 'error');
       return [];

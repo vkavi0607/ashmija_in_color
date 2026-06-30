@@ -63,6 +63,9 @@
     reviews   : 'ti-star',
   };
 
+  let _sidebarNavBound = false;
+  let _refreshButtonBound = false;
+
 
   /* ================================================================
      SKELETON HELPERS
@@ -235,12 +238,56 @@
    */
   async function loadStatCards () {
     const db = window.supabase;
+    const shouldBypassRemoteData = typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+    const isMissingTableError = (message) => {
+      const text = String(message || '').toLowerCase();
+      return text.includes('could not find the table') ||
+        text.includes('schema cache') ||
+        text.includes('does not exist');
+    };
 
     /* Show skeletons while loading */
     const statIds = ['stat-portfolio', 'stat-artists', 'stat-inquiries', 'stat-rating'];
     statIds.forEach(showStatSkeleton);
 
     document.querySelectorAll('#stats-grid .stat-card').forEach(showDeltaSkeleton);
+
+    if (shouldBypassRemoteData) {
+      const fallbackPortfolio = typeof window.getFallbackPortfolioItems === 'function'
+        ? window.getFallbackPortfolioItems()
+        : [];
+      const fallbackArtists = typeof window.getFallbackArtistsItems === 'function'
+        ? window.getFallbackArtistsItems()
+        : [];
+
+      _setStatCard({
+        valueId  : 'stat-portfolio',
+        count    : fallbackPortfolio.length,
+        deltaText: 'Total projects in gallery',
+        icon     : STAT_ICONS.portfolio,
+      });
+      _setStatCard({
+        valueId  : 'stat-artists',
+        count    : fallbackArtists.length,
+        deltaText: 'Featured studio artists',
+        icon     : STAT_ICONS.artists,
+      });
+      _setStatCard({
+        valueId  : 'stat-inquiries',
+        count    : 0,
+        deltaText: 'New in last 7 days',
+        icon     : STAT_ICONS.inquiries,
+        deltaIcon: 'ti-clock',
+      });
+      _setStatCard({
+        valueId  : 'stat-rating',
+        count    : 0,
+        deltaText: 'Awaiting approval',
+        icon     : STAT_ICONS.reviews,
+      });
+      _updateInquiriesBadge(0);
+      return;
+    }
 
     /* Seven days ago in ISO format */
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -269,7 +316,17 @@
         .map(r => r.error.message);
 
       if (errors.length) {
-        throw new Error(errors.join('; '));
+        const nonMissingErrors = errors.filter(message => !isMissingTableError(message));
+        if (nonMissingErrors.length > 0) {
+          throw new Error(nonMissingErrors.join('; '));
+        }
+
+        if (typeof window.showToast === 'function') {
+          window.showToast(
+            'Some Supabase tables are missing. Run database/schema/artwall_supabase_setup.sql to create the tables, policies, bucket, and seed data.',
+            'warning'
+          );
+        }
       }
 
       /* --- Portfolio Items --- */
@@ -386,6 +443,15 @@
 
     showActivitySkeleton('dashboard-activity-feed');
 
+    if (typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData()) {
+      feedEl.innerHTML = `
+        <div class="aw-activity-empty">
+          <i class="ti ti-history"></i>
+          Activity log is unavailable in local file preview.
+        </div>`;
+      return;
+    }
+
     try {
       const { data: logs, error } = await window.supabase
         .from('audit_log')
@@ -407,12 +473,12 @@
       feedEl.innerHTML = logs.map(_renderActivityRow).join('');
 
     } catch (err) {
-      console.error('[dashboard.js] loadActivityFeed error:', err);
       feedEl.innerHTML = `
         <div class="aw-activity-empty">
           <i class="ti ti-alert-circle"></i>
           Could not load activity log.
         </div>`;
+      console.error('[dashboard.js] loadActivityFeed error:', err);
     }
   }
 
@@ -695,6 +761,7 @@
    * because we overwrite window.navigateTo above.
    */
   function _bindSidebarNav () {
+    if (_sidebarNavBound) return;
     const nav = document.querySelector('.sidebar-nav');
     if (!nav) return;
 
@@ -708,16 +775,20 @@
       e.preventDefault();
       window.navigateTo(navItem.dataset.section);
     });
+
+    _sidebarNavBound = true;
   }
 
   /** Wire the Refresh button in the dashboard section header */
   function _bindRefreshButton () {
+    if (_refreshButtonBound) return;
     const section = document.getElementById('section-dashboard');
     if (!section) return;
 
     const refreshBtn = section.querySelector('.section-actions .btn-secondary');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', _refreshDashboard);
+      _refreshButtonBound = true;
     }
   }
 
@@ -751,6 +822,20 @@
           <span class="spinner"></span> Loading recent inquiries…
         </td>
       </tr>`;
+
+    if (typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData()) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5">
+            <div class="empty-state" style="padding:32px 24px;">
+              <i class="ti ti-inbox empty-icon"></i>
+              <div class="empty-title">No inquiries yet</div>
+              <div class="empty-text">Local file preview does not connect to Supabase.</div>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
 
     try {
       const { data: inquiries, error } = await window.supabase
@@ -805,7 +890,6 @@
       }).join('');
 
     } catch (err) {
-      console.error('[dashboard.js] loadRecentInquiries error:', err);
       tbody.innerHTML = `
         <tr>
           <td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">
@@ -813,6 +897,7 @@
             Could not load recent inquiries.
           </td>
         </tr>`;
+      console.error('[dashboard.js] loadRecentInquiries error:', err);
     }
   }
 
@@ -839,6 +924,20 @@
           <span class="spinner"></span> Loading pending reviews…
         </td>
       </tr>`;
+
+    if (typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData()) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5">
+            <div class="empty-state" style="padding:32px 24px;">
+              <i class="ti ti-star empty-icon"></i>
+              <div class="empty-title">No pending reviews</div>
+              <div class="empty-text">Local file preview does not connect to Supabase.</div>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
 
     try {
       const { data: reviews, error } = await window.supabase
@@ -886,7 +985,6 @@
       }).join('');
 
     } catch (err) {
-      console.error('[dashboard.js] loadRecentReviews error:', err);
       tbody.innerHTML = `
         <tr>
           <td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">
@@ -894,6 +992,7 @@
             Could not load pending reviews.
           </td>
         </tr>`;
+      console.error('[dashboard.js] loadRecentReviews error:', err);
     }
   }
 

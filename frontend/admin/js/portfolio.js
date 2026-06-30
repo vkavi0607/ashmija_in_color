@@ -34,6 +34,7 @@
   const BUCKET      = 'artwall-media';
   const STORAGE_DIR = 'portfolio/';
   const TABLE       = 'portfolio';
+  let _schemaWarningShown = false;
 
   /** Module-level state — reset each time initPortfolio() is called. */
   let _items        = [];       // current fetched portfolio rows
@@ -42,6 +43,80 @@
   let _editingId    = null;     // UUID of item being edited (null = new)
   let _modalFile    = null;     // File object selected in modal
   let _bulkSelected = new Set();// UUIDs checked for bulk ops
+
+  function isMissingTableError(err) {
+    const message = String(err?.message || err?.details || err || '').toLowerCase();
+    return message.includes('could not find the table') ||
+      message.includes('schema cache') ||
+      message.includes('does not exist');
+  }
+
+  function shouldBypassRemoteData() {
+    return typeof window.shouldBypassRemoteData === 'function' && window.shouldBypassRemoteData();
+  }
+
+  function getFallbackPortfolio() {
+    return [
+      {
+        id: 'fallback-botanical-bloom',
+        title: 'Botanical Bloom',
+        artist_name: 'Priya Natarajan',
+        client: 'Google India - Chennai Campus',
+        location: 'Chennai, Tamil Nadu',
+        area: '2,400 sq. ft.',
+        art_type: 'Botanical Mural · Hand-Painted',
+        year: 2024,
+        image_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=600&h=900&q=80',
+        display_order: 0,
+        is_featured: true,
+        is_hidden: false,
+      },
+      {
+        id: 'fallback-urban-grid',
+        title: 'Urban Grid',
+        artist_name: 'Arun K.',
+        client: 'WeWork - Bangalore Hub',
+        location: 'Bangalore, Karnataka',
+        area: '850 sq. ft.',
+        art_type: 'Geometric Street Art',
+        year: 2024,
+        image_url: 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=600&h=400&q=80',
+        display_order: 1,
+        is_featured: false,
+        is_hidden: false,
+      },
+      {
+        id: 'fallback-golden-axis',
+        title: 'Golden Axis',
+        artist_name: 'Ravi S.',
+        client: 'ITC Grand Chola',
+        location: 'Guindy, Chennai',
+        area: '680 sq. ft.',
+        art_type: 'Gold Leaf Abstract',
+        year: 2024,
+        image_url: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80',
+        display_order: 2,
+        is_featured: false,
+        is_hidden: false,
+      },
+      {
+        id: 'fallback-nebula',
+        title: 'Nebula',
+        artist_name: 'Divya M.',
+        client: 'Zoho Corporation',
+        location: 'Tenkasi, Tamil Nadu',
+        area: '1,500 sq. ft.',
+        art_type: 'Cosmic Mural · Spray Art',
+        year: 2024,
+        image_url: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80',
+        display_order: 3,
+        is_featured: false,
+        is_hidden: false,
+      },
+    ];
+  }
+
+  window.getFallbackPortfolioItems = getFallbackPortfolio;
 
   /* ================================================================
      INJECT MODULE STYLES  (once per page load)
@@ -361,6 +436,10 @@
 
   async function fetchPortfolio () {
     try {
+      if (shouldBypassRemoteData()) {
+        return getFallbackPortfolio();
+      }
+
       const { data, error } = await window.supabase
         .from(TABLE)
         .select('*')
@@ -370,6 +449,14 @@
       if (error) throw error;
       return data || [];
     } catch (err) {
+      if (isMissingTableError(err)) {
+        if (!_schemaWarningShown) {
+          showToast('warning', 'Supabase schema missing', 'Showing local fallback portfolio items until the portfolio table is applied.');
+          _schemaWarningShown = true;
+        }
+        return getFallbackPortfolio();
+      }
+
       console.error('[portfolio] fetch error:', err);
       showToast('error', 'Load failed', err.message || 'Could not load portfolio.');
       return [];
@@ -542,7 +629,7 @@
       const failed = results.find(r => r.error);
       if (failed) throw failed.error;
 
-      await window.logAudit('portfolio', 'reorder', { count: updates.length });
+      await logAudit('portfolio', 'reorder', { count: updates.length });
       showToast('success', 'Order saved', `Reordered ${updates.length} items.`);
     } catch (err) {
       console.error('[portfolio] reorder error:', err);
@@ -593,7 +680,7 @@
         .in('id', ids);
       if (error) throw error;
 
-      await window.logAudit('portfolio', 'bulk_hide', { ids });
+      await logAudit('portfolio', 'bulk_hide', { ids });
       showToast('success', 'Hidden', `${ids.length} item(s) are now hidden.`);
       _bulkSelected.clear();
       refreshBulkBar();
@@ -636,7 +723,7 @@
           const { error } = await window.supabase.from(TABLE).delete().in('id', ids);
           if (error) throw error;
 
-          await window.logAudit('portfolio', 'bulk_delete', { ids });
+          await logAudit('portfolio', 'bulk_delete', { ids });
           showToast('success', 'Deleted', `${n} item${n > 1 ? 's' : ''} deleted.`);
           _bulkSelected.clear();
           refreshBulkBar();
@@ -665,7 +752,7 @@
         .from(TABLE).update({ is_featured: newVal }).eq('id', id);
       if (error) throw error;
       item.is_featured = newVal;
-      await window.logAudit('portfolio', 'toggle_featured', { id, is_featured: newVal });
+      await logAudit('portfolio', 'toggle_featured', { id, is_featured: newVal });
       showToast('success', newVal ? 'Featured' : 'Unfeatured', `"${item.title}" updated.`);
       renderGrid(_items, document.getElementById('portfolio-search')?.value.trim() || '');
     } catch (err) {
@@ -683,7 +770,7 @@
         .from(TABLE).update({ is_hidden: newVal }).eq('id', id);
       if (error) throw error;
       item.is_hidden = newVal;
-      await window.logAudit('portfolio', 'toggle_hidden', { id, is_hidden: newVal });
+      await logAudit('portfolio', 'toggle_hidden', { id, is_hidden: newVal });
       showToast('success', newVal ? 'Hidden' : 'Visible', `"${item.title}" updated.`);
       renderGrid(_items, document.getElementById('portfolio-search')?.value.trim() || '');
     } catch (err) {
@@ -726,7 +813,7 @@
           const { error } = await window.supabase.from(TABLE).delete().eq('id', id);
           if (error) throw error;
 
-          await window.logAudit('portfolio', 'delete', { id, title: item.title });
+          await logAudit('portfolio', 'delete', { id, title: item.title });
           showToast('success', 'Deleted', `"${item.title}" removed.`);
           _items = _items.filter(i => i.id !== id);
           renderGrid(_items, document.getElementById('portfolio-search')?.value.trim() || '');
@@ -970,7 +1057,7 @@
           .from(TABLE).update(payload).eq('id', _editingId);
         if (error) throw error;
 
-        await window.logAudit('portfolio', 'update', { id: _editingId, title });
+        await logAudit('portfolio', 'update', { id: _editingId, title });
         showToast('success', 'Saved', `"${title}" updated successfully.`);
       } else {
         /* INSERT — append after existing items */
@@ -983,7 +1070,7 @@
         const { error } = await window.supabase.from(TABLE).insert(payload);
         if (error) throw error;
 
-        await window.logAudit('portfolio', 'create', { title });
+        await logAudit('portfolio', 'create', { title });
         showToast('success', 'Added', `"${title}" added to portfolio.`);
       }
 
@@ -1023,7 +1110,6 @@
   window.renderPortfolioToMainSite = async function renderPortfolioToMainSite () {
     const galleryGrid = document.querySelector('.gallery-grid');
     if (!galleryGrid) {
-      console.warn('[portfolio] .gallery-grid not found on this page.');
       return;
     }
 
@@ -1037,16 +1123,20 @@
       </div>`;
 
     try {
-      const { data, error } = await window.supabase
-        .from(TABLE)
-        .select('*')
-        .eq('is_hidden', false)
-        .order('display_order', { ascending: true })
-        .order('created_at',    { ascending: true });
+      let items = [];
+      if (shouldBypassRemoteData()) {
+        items = getFallbackPortfolio().filter((item) => !item.is_hidden);
+      } else {
+        const { data, error } = await window.supabase
+          .from(TABLE)
+          .select('*')
+          .eq('is_hidden', false)
+          .order('display_order', { ascending: true })
+          .order('created_at',    { ascending: true });
 
-      if (error) throw error;
-
-      const items = data || [];
+        if (error) throw error;
+        items = data || [];
+      }
 
       if (items.length === 0) {
         galleryGrid.innerHTML = `
@@ -1056,10 +1146,10 @@
         return;
       }
 
-      /* Build HTML — first item is 'tall' (440px), rest are 215px */
+      /* Build HTML — first item is 'tall' (330px), rest are 150px */
       const html = items.map((item, index) => {
         const isTall   = index === 0;
-        const height   = isTall ? '440px' : '215px';
+        const height   = isTall ? '330px' : '150px';
         const tallClass = isTall ? ' tall' : '';
 
         const imgTag = item.image_url
@@ -1159,6 +1249,10 @@
 
       galleryObserver.observe(galleryGrid);
 
+      if (typeof window.initCreationsShowcase === 'function') {
+        window.initCreationsShowcase();
+      }
+
     } catch (err) {
       console.error('[portfolio] renderPortfolioToMainSite error:', err);
       galleryGrid.innerHTML = originalHtml;
@@ -1212,8 +1306,28 @@
   }
 
   /** Thin wrappers so calls read cleanly even when window.* prefix would be noisy. */
-  function openModal  (opts)  { if (window.openModal)  window.openModal(opts);  }
-  function closeModal ()      { if (window.closeModal) window.closeModal();      }
-  function showToast  (t, ti, m) { if (window.showToast) window.showToast(t, ti, m); }
+  function openModal (opts) {
+    if (window.openModal) window.openModal(opts);
+  }
+
+  function closeModal () {
+    if (window.closeModal) window.closeModal();
+  }
+
+  function showToast (type, title, message) {
+    if (!window.showToast) return;
+    const text = message ? `${title}: ${message}` : title;
+    window.showToast(text, type);
+  }
+
+  async function logAudit (module, action, details = {}) {
+    try {
+      if (typeof window.logAudit === 'function') {
+        await window.logAudit(module, action, details);
+      }
+    } catch (err) {
+      console.warn('[portfolio] audit log skipped:', err);
+    }
+  }
 
 })();

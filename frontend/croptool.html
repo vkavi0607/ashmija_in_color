@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Photo Crop Position Tool</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Arial, sans-serif;
+    background: #f4efe6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5rem 1rem;
+    color: #2a241c;
+  }
+  h1 { font-size: 1.3rem; margin-bottom: 0.3rem; }
+  p.sub { color: #6b5f4f; margin-bottom: 1.8rem; text-align: center; max-width: 480px; }
+  .upload-box {
+    margin-bottom: 1.5rem;
+  }
+  .card-preview {
+    width: 220px;
+    height: 220px;
+    border-radius: 46% 54% 58% 42% / 50% 46% 54% 50%;
+    overflow: hidden;
+    background: #e8ddcc url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400&h=500') center 8% / cover no-repeat;
+    box-shadow: 0 12px 24px rgba(28,26,23,0.15);
+    margin-bottom: 1.5rem;
+    transition: background-position 0.15s ease;
+  }
+  .controls {
+    width: 320px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 6px 18px rgba(28,26,23,0.08);
+  }
+  label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.4rem; }
+  input[type=range] { width: 100%; }
+  .value-display {
+    font-family: monospace;
+    background: #f4efe6;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    margin-top: 0.8rem;
+    font-size: 0.95rem;
+    text-align: center;
+    user-select: all;
+  }
+  input[type=file] { margin-top: 1rem; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+  <h1>Photo Crop Position Tuner</h1>
+  <p class="sub">Drag the slider until the face sits where you want inside the blob shape. The exact CSS value updates below — copy it into the <code>--photo-pos</code> style on that person's &lt;img&gt; tag.</p>
+
+  <div class="card-preview" id="preview"></div>
+
+  <div class="controls">
+    <label for="slider">Vertical focus position</label>
+    <input type="range" id="slider" min="0" max="100" value="8">
+    <div class="value-display" id="valueOut">--photo-pos: center 8%;</div>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+<script>
+  const preview = document.getElementById('preview');
+  const slider = document.getElementById('slider');
+  const valueOut = document.getElementById('valueOut');
+  const fileInput = document.getElementById('fileInput');
+
+  function update() {
+    const v = slider.value;
+    preview.style.backgroundPosition = `center ${v}%`;
+    valueOut.textContent = `--photo-pos: center ${v}%;`;
+  }
+
+  slider.addEventListener('input', update);
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    preview.style.backgroundImage = `url('${url}')`;
+  });
+
+  update();
+</script>
+</body>
+</html>

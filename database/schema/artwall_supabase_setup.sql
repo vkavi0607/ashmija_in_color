@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name         text,
   company      text,
+  location     text,
   review_text  text,
   rating       int,
   avatar_url   text,
@@ -240,16 +241,13 @@ INSERT INTO portfolio (title, artist_name, client, location, area, art_type, yea
 SELECT 'Urban Grid', 'Arun K.', 'WeWork — Bangalore Hub', 'Bangalore, Karnataka', '850 sq. ft.', 'Geometric Street Art', 2024, 'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=600&h=400&q=80', 1, false, false
 WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Urban Grid');
 
-INSERT INTO portfolio (title, artist_name, client, location, area, art_type, year, image_url, display_order, is_featured, is_hidden)
-SELECT 'Ocean Memory', 'Meera S.', 'Taj Fisherman''s Cove', 'Kovalam, Chennai', '1,200 sq. ft.', 'Abstract Fluid Art', 2023, 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&w=600&h=400&q=80', 2, false, false
-WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Ocean Memory');
 
 INSERT INTO portfolio (title, artist_name, client, location, area, art_type, year, image_url, display_order, is_featured, is_hidden)
-SELECT 'Golden Axis', 'Ravi S.', 'ITC Grand Chola', 'Guindy, Chennai', '680 sq. ft.', 'Gold Leaf Abstract', 2024, 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80', 3, false, false
+SELECT 'Golden Axis', 'Ravi S.', 'ITC Grand Chola', 'Guindy, Chennai', '680 sq. ft.', 'Gold Leaf Abstract', 2024, 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=600&h=400&q=80', 2, false, false
 WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Golden Axis');
 
 INSERT INTO portfolio (title, artist_name, client, location, area, art_type, year, image_url, display_order, is_featured, is_hidden)
-SELECT 'Nebula', 'Divya M.', 'Zoho Corporation', 'Tenkasi, Tamil Nadu', '1,500 sq. ft.', 'Cosmic Mural · Spray Art', 2024, 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80', 4, false, false
+SELECT 'Nebula', 'Divya M.', 'Zoho Corporation', 'Tenkasi, Tamil Nadu', '1,500 sq. ft.', 'Cosmic Mural · Spray Art', 2024, 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&w=600&h=400&q=80', 3, false, false
 WHERE NOT EXISTS (SELECT 1 FROM portfolio WHERE title = 'Nebula');
 
 
@@ -264,24 +262,20 @@ INSERT INTO artists (name, role, bio, quote, image_url, stats, is_available, dis
 SELECT 'Ashmija', 'Lead Artist, Muralist', 'Merging intricate botanical illustrations with architectural backdrops, Ashmija''s nature-inspired murals and large-scale floral art pieces bring organic life and a sense of calm to high-end interiors across South Asia.', 'My work bridges the gap between concrete rooms and the wild serenity of nature. I paint to give blank walls a voice and spaces a heartbeat.', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400&h=500', '✦ 120+ Murals,✦ National Art Award', true, 1
 WHERE NOT EXISTS (SELECT 1 FROM artists WHERE name = 'Ashmija');
 
-INSERT INTO artists (name, role, bio, quote, image_url, stats, is_available, display_order)
-SELECT 'Meera S.', 'Fine Art & Botanical Specialist', 'With a background in classical fine art, Meera translates traditional oil and watercolor textures onto large indoor surfaces. Her work features detailed foliage patterns, soft color palettes, and elegant spatial harmonies.', 'A mural is a dialogue with the room''s geometry. Every stroke is designed to harmonize with the light and air of the space.', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=500', '✦ 90+ Paintings,✦ Gold Medalist in Fine Arts', true, 2
-WHERE NOT EXISTS (SELECT 1 FROM artists WHERE name = 'Meera S.');
-
 
 -- ============================================================
 -- 8. REVIEWS SEED DATA
 -- ============================================================
-INSERT INTO reviews (name, company, review_text, rating, avatar_url, is_approved, is_pinned)
-SELECT 'Kavitha', 'Director, Google Chennai', 'ArtWall transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.', 5, 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150', true, true
+INSERT INTO reviews (name, company, location, review_text, rating, avatar_url, is_approved, is_pinned)
+SELECT 'Kavitha', 'Director, Google Chennai', 'Chennai', 'ArtWall transformed our empty lobby into an immersive botanical gallery. Our visitors are consistently wowed at first glance. Truly professional management from sketch to paint.', 5, 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150', true, true
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE name = 'Kavitha');
 
-INSERT INTO reviews (name, company, review_text, rating, avatar_url, is_approved, is_pinned)
-SELECT 'Vikram', 'Curator, Taj Group', 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.', 5, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150', true, true
+INSERT INTO reviews (name, company, location, review_text, rating, avatar_url, is_approved, is_pinned)
+SELECT 'Vikram', 'Curator, Taj Group', 'Chennai', 'We wanted our restaurant wall to reflect the rich heritage of South India in a modern way. The geometric murals Priya designed did exactly that. Absolute masterpiece.', 5, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150', true, true
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE name = 'Vikram');
 
-INSERT INTO reviews (name, company, review_text, rating, avatar_url, is_approved, is_pinned)
-SELECT 'Ananya', 'Architect, Nair Villas', 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.', 5, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150', true, true
+INSERT INTO reviews (name, company, location, review_text, rating, avatar_url, is_approved, is_pinned)
+SELECT 'Ananya', 'Architect, Nair Villas', 'Kochi', 'Every detail of the custom installation inside our luxury courtyard was handled flawlessly. The weather-resistant paints are holding up beautifully under direct sun. Highly recommended.', 5, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150', true, true
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE name = 'Ananya');
 
 
@@ -307,7 +301,7 @@ WHERE NOT EXISTS (SELECT 1 FROM faqs WHERE question = 'What paints and materials
 UPDATE auth.users
 SET email_confirmed_at = NOW(),
     confirmed_at = NOW()
-WHERE email = 'admin@artwallstudio.com';
+WHERE email = 'admin@ashmijaincolor.com';
 
 
 -- ============================================================
