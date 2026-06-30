@@ -62,6 +62,7 @@ The platform features a public landing page showcasing the studio's work and an 
 - **Quill.js** - Rich text editor for content
 
 ### Backend & Services
+- **Java Spring Boot** - REST API for contact-form email notifications
 - **Supabase** - Backend-as-a-Service
   - PostgreSQL Database
   - Authentication (Email/Password)
@@ -151,6 +152,7 @@ artwall-studio/
 
 ### Prerequisites
 - Node.js 16+ (for backend development)
+- Java 8+ and Maven 3.8+ for the Spring Boot contact API
 - Docker & Docker Compose (for containerized deployment)
 - Supabase account with project setup
 
@@ -174,7 +176,27 @@ artwall-studio/
    # For live server, use VS Code Live Server extension or similar
    ```
 
-4. **Docker Deployment**
+4. **Run the Spring Boot contact API**
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+
+   The API starts at `http://localhost:8080` and exposes `POST /api/contact`.
+   The public contact form sends the user's details to this endpoint.
+
+   In local development, `CONTACT_DELIVERY_MODE=log` prints the email content in backend logs.
+   To send real Gmail SMTP emails to `srinithi7325@gmail.com`, set:
+   ```env
+   CONTACT_DELIVERY_MODE=email
+   CONTACT_RECIPIENT_EMAIL=srinithi7325@gmail.com
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your_gmail_address@gmail.com
+   SMTP_PASSWORD=your_gmail_app_password
+   ```
+
+5. **Docker Deployment**
    ```bash
    docker-compose up -d
    ```
@@ -232,11 +254,12 @@ docker push your-registry/artwall-frontend:latest
 ## 🧪 Testing
 
 ```bash
+# Spring Boot backend tests
+cd backend
+mvn test
+
 # Frontend tests (future)
 npm run test:frontend
-
-# Backend tests (future)
-npm run test:backend
 
 # All tests
 npm test
@@ -262,7 +285,7 @@ For support, email support@ashmijaincolor.com or open an issue on GitHub.
 
 ## 🎯 Roadmap
 
-- [ ] Backend API development (Node.js/Express)
+- [x] Contact form backend API with Java Spring Boot
 - [ ] Machine Learning integration for mural recommendation
 - [ ] Advanced analytics dashboard
 - [ ] Mobile application
